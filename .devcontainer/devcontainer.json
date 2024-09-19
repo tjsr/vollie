@@ -16,7 +16,8 @@
 					".git": true,
 					".vscode": true,
 					"**/.git": false
-				}
+				},
+				"eslint.runtime": "node"
 			},
 			"extensions": [
 				"GitHub.copilot",
@@ -29,10 +30,10 @@
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [8788,5173]
+	"forwardPorts": [8788,5173],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "yarn install",
+	"postCreateCommand": "git config --global --add safe.directory /workspaces/vollie"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
