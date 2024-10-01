@@ -7,11 +7,13 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npm run db:generate && drizzle-kit migrate",
     "db:export:dev": "mkdir data && npx wrangler d1 export vollie-dev --local --no-schema --output=./data/export.sql",
-    "db:init": "npx wrangler d1 execute vollie-dev --local --file=./src/sql/schema.sql",
-    "db:init:remote": "npx wrangler d1 execute vollie-prod --remote --file=./src/sql/schema.sql",
+    "db:export:dev-all": "npx wrangler d1 export vollie-dev --local --output=./data/export.sql",
+    "db:init": "wrangler d1 create vollie-dev",
+    "db:init:old": "npx wrangler d1 execute vollie-dev --local --file=./src/sql/schema.sql",
+    "db:init:old:remote": "npx wrangler d1 execute vollie-prod --remote --file=./src/sql/schema.sql",
     "dev": "wrangler pages dev",
     "dev:workers": "wrangler dev",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --watch",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "npm run build && wrangler pages dev ./dist",
     "deploy": "npm run build && wrangler pages deploy ./dist",
@@ -19,14 +21,24 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.1",
+    "@rjsf/core": "^5.21.1",
+    "@rjsf/mui": "^5.21.1",
+    "@rjsf/utils": "^5.21.1",
+    "@rjsf/validator-ajv8": "^5.21.1",
+    "@tanstack/react-query": "^5.56.2",
     "drizzle-orm": "^0.33.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "zustand": "^5.0.0-rc.2"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.5.5",
-    "@cloudflare/workers-types": "^4.20240909.0",
-    "@types/react": "^18.3.7",
+    "@cloudflare/vitest-pool-workers": "^0.5.12",
+    "@cloudflare/workers-types": "^4.20240925.0",
+    "@types/react": "^18.3.10",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
@@ -36,7 +48,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "typescript": "^5.6.2",
-    "vite": "^5.2.0",
-    "wrangler": "^3.78.5"
+    "vite": "^5.4.8",
+    "wrangler": "^3.78.12"
   }
 }

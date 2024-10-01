@@ -3,25 +3,30 @@ compatibility_date = "2024-09-17"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./dist"
 send_metrics = true
+upload_source_maps = true
+# workers_dev = true
 # main = "src/workers.ts"
 
 [[d1_databases]]
 binding = "VOLLIE_DB"
+migrations_dir = "drizzle"
 database_name = "vollie-dev"
-database_id = "a3810bf6-704d-45c4-bac3-a7097007c9d5"
-migrations_dir = "drizzle/migrations"
+database_id = "0ca397fd-57d5-43cd-acd9-05fd6f7fb36a"
 
 [env.preview]
+vars = { ENVIRONMENT = "preview" }
 d1_databases = [
-  { binding = "VOLLIE_DB", database_name = "vollie-dev", database_id = "a3810bf6-704d-45c4-bac3-a7097007c9d5" },
+  { migrations_dir = "drizzle/migrations", binding = "VOLLIE_DB", database_name = "vollie-dev", database_id = "0ca397fd-57d5-43cd-acd9-05fd6f7fb36a" }
 ]
 
 #[env.test]
+#vars = { ENVIRONMENT = "test" }
 #d1_databases = [
 #  { binding = "VOLLIE_DB", database_name = "vollie-test", database_id = "331bcb84-2c8a-4063-88f8-36c647e629fd" },
 #]
 
 #[env.staging]
+#vars = { ENVIRONMENT = "staging" }
 #d1_databases = [
 #  { binding = "VOLLIE_DB", database_name = "vollie-staging", database_id = "b59b55f3-ce54-4330-a315-85a275acdc7f" },
 #]
