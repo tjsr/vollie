@@ -1,7 +1,10 @@
+import { LinkTarget } from "../stores/ui";
 import { User } from "../model/entity";
 
 export interface VolliePageProps {
-  setFooters: (elements: JSX.Element[]) => void;
+  // addFooterLink: (elements: LinkElement[]) => void;
+
+  addFooterLink: (elements: LinkTarget) => void;
   setTitle: (title: string) => void;
   currentUser?: User | null;
 }

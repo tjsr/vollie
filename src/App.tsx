@@ -1,25 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import './App.css';
 
+import { Link, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {
-  Route,
-  Routes,
-} from "react-router-dom";
 
 import { EventFormPage } from './ui/Event.js';
 import { EventListPage } from './ui/EventList.js';
 import { Index } from './ui/Index.js';
 import { OrganisationListPage } from './ui/OrganisationList.js';
 import { SeriesListPage } from './ui/SeriesList.js';
-import { VolliePageProps } from "./ui/types.js";
+import { VolliePageProps } from './ui/types.js';
 import { useCurrentUser } from './stores/index.js';
-import { useState } from 'react';
+import { useUi } from './stores/ui.js';
 
 // import * as ReactDOM from 'react-dom';
-
-
 
 // const schema: RJSFSchema = {
 //   "title": "A registration form",
@@ -90,7 +86,7 @@ interface EventParams {
 }
 
 // @ts-expect-error unused
-const _eventLoader = (params:any) => {
+const _eventLoader = (params: any) => {
   console.log(`Event context loader: ${JSON.stringify(params)}`);
   const result: EventParams = {
     loginUsername: 'test@tjsr.id.au',
@@ -102,42 +98,45 @@ const _eventLoader = (params:any) => {
   return params;
 };
 
-interface RootParams {
-
-}
+interface RootParams {}
 
 // @ts-expect-error 6133
-const rootLoader = (params: RootParams ) => {
+const rootLoader = (params: RootParams) => {
   console.log(`Root loader context: ${JSON.stringify(params)}`);
   return {
     loginUsername: 'test@tjsr.id.au',
   };
 };
 
-function App() {
+//const FOOTERS_ENABLED = false;
+
+const App = (): JSX.Element => {
   // const [loginUsername, _setLoginUsername] = useState<string|undefined>(defaultUser);
 
   const queryClient = new QueryClient();
   const { currentUser } = useCurrentUser();
-  const [additionalFooters, setAdditionalFooters] = useState<JSX.Element|null>(null);
-  const [title, setTitle] = useState<string>('Vollie');
+  // const [additionalFooters, setAdditionalFooters] = useState<JSX.Element | null>(null);
+  // const [title, setTitle] = useState<string>('Vollie');
+  const uiState = useUi();
 
-  const safeSetAdditionalFooters = (footerComponents: JSX.Element[]): void => {
-    // if (additionalFooters !== footerComponents) {
-      // setAdditionalFooters(<>{footerComponents.map((c) => <div>{c}</div>) || <></>}</>);
-    // }
-  }
+  // const safeSetAdditionalFooters = (footerComponents: JSX.Element[]): void => {
+  //   if (FOOTERS_ENABLED) {
+  //     // if (additionalFooters !== footerComponents) {
+  //     setAdditionalFooters(<>{footerComponents.map((c) => <div>{c}</div>) || <></>}</>);
+  //     // }
+  //   }
+  // };
 
-  const safeSetTitle = (newTitle: string): void => {
-    if (newTitle !== title) {
-      setTitle(newTitle);
-    }
-  };
+  // const safeSetTitle = (newTitle: string): void => {
+  //   if (newTitle !== title) {
+  //     setTitle(newTitle);
+  //   }
+  // };
 
   const appProps: VolliePageProps = {
     currentUser: currentUser,
-    setFooters: safeSetAdditionalFooters,
-    setTitle: safeSetTitle,
+    addFooterLink: uiState.addLinkTarget,
+    setTitle: uiState.setPageTitle,
   };
 
   // const userStore = useUser();
@@ -151,7 +150,7 @@ function App() {
   //     element: <Root loginUsername={loginUsername} />,
   //     loader: rootLoader,
   //     children: [
-  //       { 
+  //       {
   //         path: "event",
   //         element: <Event loginUsername={loginUsername} />,
   //         loader: eventLoader,
@@ -165,35 +164,41 @@ function App() {
   //   },
   // ]);
 
-
-  const idString = currentUser !== null ?
-  `${currentUser?.firstName} ${currentUser?.lastName} (${currentUser?.email})` :
-  'Not logged in';
+  const idString =
+    currentUser !== null
+      ? `${currentUser?.firstName} ${currentUser?.lastName} (${currentUser?.email})`
+      : 'Not logged in';
 
   console.log('Returning app router...');
-  return (<>
-    <header>
-      { currentUser && <div className="loginUser">{idString}</div> }
-      <h2>{title}</h2>
-    </header>
-    <QueryClientProvider client={queryClient}>
-      <Routes>
-        <Route index element={<Index />} />
-        <Route path="/event/:eventId" element={<EventFormPage {...appProps} />} />
-        <Route path="/event/new" element={<EventFormPage {...appProps} />} />
-        <Route path="/event/list" element={<EventListPage {...appProps} />} />
-        <Route path="/events" element={<EventListPage {...appProps} />} />
-        <Route path="/organisations" element={<OrganisationListPage {...appProps} />} />
-        <Route path="/series" element={<SeriesListPage {...appProps} />} />
-      </Routes>
-    </QueryClientProvider>
-    <footer>
-      {additionalFooters}
-      <div className="linkHome"><a href="/">Back to main</a></div>
-      {additionalFooters}
-    </footer>
+  return (
+    <>
+      <header>
+        {currentUser && <div className="loginUser">{idString}</div>}
+        <h2>{uiState.title}</h2>
+      </header>
+      <QueryClientProvider client={queryClient}>
+        <Routes>
+          <Route index element={<Index />} />
+          <Route path="/event/:eventId" element={<EventFormPage {...appProps} />} />
+          <Route path="/event/new" element={<EventFormPage {...appProps} />} />
+          <Route path="/event/list" element={<EventListPage {...appProps} />} />
+          <Route path="/events" element={<EventListPage {...appProps} />} />
+          <Route path="/organisations" element={<OrganisationListPage {...appProps} />} />
+          <Route path="/series" element={<SeriesListPage {...appProps} />} />
+        </Routes>
+      </QueryClientProvider>
+      <footer>
+        {uiState.footerLinks.map((l) => (
+          <div>
+            <Link to={l.target}>{l.text}</Link>
+          </div>
+        ))}
+        <div className="linkHome">
+          <a href="/">Back to main</a>
+        </div>
+      </footer>
     </>
-  )
-}
+  );
+};
 
 export default App

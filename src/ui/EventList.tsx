@@ -1,18 +1,9 @@
-import { Link } from "react-router-dom";
-import { VolliePageProps } from "./types";
+import { VolliePageProps } from './types';
 
-interface EventListPageProps extends VolliePageProps {
+interface EventListPageProps extends VolliePageProps {}
 
-}
-
-export const EventListPage = ({ currentUser, setFooters, setTitle } : EventListPageProps ): JSX.Element => {
-  setFooters([
-    <div className="newEvent"><Link to="/event/new">Create new event</Link></div>
-  ]);
+export const EventListPage = ({ addFooterLink, setTitle }: EventListPageProps): JSX.Element => {
+  addFooterLink({ target: '/event/new', text: 'Create new event' });
   setTitle('Events');
-  return (
-    <div>
-
-    </div>
-  );
+  return <div></div>;
 };

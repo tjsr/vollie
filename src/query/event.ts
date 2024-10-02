@@ -2,12 +2,11 @@ import { RaceEvent, User } from '../model/entity';
 import { fetchJson, genericPost } from "./util";
 
 import { EventId } from "../model/id";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NewRaceEventTO } from "../model/to";
 import { NotFoundError } from '../types';
 
-export const fetchEvent = async (eventId: EventId, currentUser: User|undefined|null): Promise<RaceEvent> => {
-  return fetchJson<RaceEvent, EventId>(`/event/${eventId}`, currentUser).catch((err) => {
+export const fetchEvent = async (eventId: EventId, currentUser: User|undefined|null): Promise<RaceEvent|void> => {  
+  return fetchJson<RaceEvent, EventId>(`/event/${eventId}`, currentUser).then((result) => result).catch((err) => {
     if (err instanceof NotFoundError) {
       err.message = `Event ${eventId} not found`;
       throw err;
@@ -15,7 +14,7 @@ export const fetchEvent = async (eventId: EventId, currentUser: User|undefined|n
   });
 }
 
-export const postEvent = async (event: any): Promise<void> => { // Promise<RaceEvent> => {
+export const postEvent = async (event: RaceEvent): Promise<void> => { // Promise<RaceEvent> => {
   await genericPost('/event', eventFormToRaceEventTO, event);
 };
 
