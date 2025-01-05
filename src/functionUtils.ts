@@ -9,22 +9,16 @@ export interface Env {
 }
 
 export type CreateFunction<
-TO,
-NewTO extends Uninitialised<TO> = Uninitialised<TO>,
-ExistingTO extends Existing<TO> = Existing<TO>
+  TO,
+  NewTO extends Uninitialised<TO> = Uninitialised<TO>,
+  ExistingTO extends Existing<TO> = Existing<TO>
 > = (db: VollieDrizzleConnection, to: NewTO) => Promise<ExistingTO>;
 export type UpdateFunction<TO extends TransferObject<unknown>, ID extends IdType> = (db: VollieDrizzleConnection, to: TO) => Promise<ID>;
-export type BodyValidateFunction<TO extends TransferObject<unknown, ID>, ID extends IdType> = (body: Record<string, unknown>) => ValidatedTOs<TO, ID>;
 
 // type InferNewTO<NewTO> = NewTO extends Uninitialised<infer TO> ? TO : never;
 // type IdValidateFunction<ID extends IdType> = (idParam: string | string[],raw: boolean) => T;
 // type InferValidatedTO<T, ID extends IdType> = T extends BodyValidateFunction<infer TO, ID> ? TO : never;
 // type InferTO<T, ID extends IdType> = T extends BodyValidateFunction<infer TO, ID> ? TO : never;
-
-export type ValidatedTOs<TO, ID extends IdType> = {
-  created?: Uninitialised<TO>;
-  updated?: Existing<TO, ID>;
-};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const onHtmlRequest: PagesFunction<Env> = async (context: EventContext<Env, '', Record<string, unknown>>) => {
@@ -55,6 +49,7 @@ export const notYetImplementedRequestHandler = async (_context: EventContext<Env
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const notAllowedMethodHandler = async (_context: EventContext<Env, string, Record<string, unknown>>) => {
+  console.trace('Not allowed');
   return new Response('Method Not Allowed', { status: 405 });
 };
 

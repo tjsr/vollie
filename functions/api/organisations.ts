@@ -5,13 +5,15 @@ import { getDbConnectionFromEnv } from "../../src/orm";
 import { organisationSelectAll } from "../../src/orm/drizzle/queries/organistion";
 
 export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, 'organisationId', Record<string, unknown>>) => {
-  if (context.request.method === 'POST') {
-    return notAllowedMethodHandler(context);
-  }
+  console.log('/organisations entrypoint: ', context.request.url);
   if (context.request.headers.get('content-type') !== 'application/json') {
     return onHtmlRequest(context);
   }
-  return onJsonRequestGet(context);
+
+  if (context.request.method=== 'GET') {
+    return onJsonRequestGet(context);
+  }
+  return notAllowedMethodHandler(context);
 };
 
 export const onJsonRequestGetAll: PagesFunction<Env> = async (context: EventContext<Env, never, Record<string, unknown>>) => {
@@ -25,11 +27,9 @@ export const onJsonRequestGetAll: PagesFunction<Env> = async (context: EventCont
   return Response.json(result);
 };
 
-
 export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext<Env, never, Record<string, unknown>>) => {
   const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
 
   const result = await organisationSelectAll(db);
   return Response.json(result);
 };
-

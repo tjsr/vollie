@@ -13,6 +13,8 @@ export default {
         .bind(DEFAULT_ORGANISER)
         .all();
       return Response.json(results);
+    } else {
+      console.log('Unknown path in workers fetch().')
     }
 
     return new Response(

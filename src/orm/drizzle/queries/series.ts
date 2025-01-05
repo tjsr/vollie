@@ -1,7 +1,7 @@
+import { Existing, Uninitialised } from "../../../model/to";
 import { SeriesTO, SeriesTable, SeriesTableTO } from "../schema/series";
 
 import { CreateFunction } from "../../../functionUtils";
-import { Existing } from "../../../model/to";
 import { OrganisationsTable } from "../schema/organisations";
 import { Series } from "../model";
 import { SeriesId } from "../../../model/id";
@@ -11,8 +11,10 @@ import { VollieDrizzleConnection } from "../../types";
 import { eq } from "drizzle-orm";
 import { safeCheckAndCopy } from "./utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const seriesSelectToSeriesType = (result: any): Series => ({
+type SeriesSelectByIdResult = Awaited<ReturnType<typeof seriesSelectById>>;
+type SeriesSelectByIdResultItem = SeriesSelectByIdResult extends Array<infer U> ? U : never;
+
+const seriesSelectToSeriesType = (result: SeriesSelectByIdResultItem): Series => ({
   ...result.series,
   organiser: result.organiser,
 });
@@ -42,18 +44,11 @@ export const selectSeriesById = async (db: VollieDrizzleConnection, id: SeriesId
   return resultPromise;
 };
 
-export const selectSeries = async (db: VollieDrizzleConnection): Promise<Series[]> => {
-  // const dbSelect = eventSelect(db);
-  // return eventSelectJoined(db);
-  const resultPromise = seriesSelectAll(db).then((result) => {
-    return result.map((r) => seriesSelectToSeriesType(r));
-  });
-  return resultPromise;
-};
+export const selectSeries = async (db: VollieDrizzleConnection): Promise<Series[]> => 
+  seriesSelectAll(db);
 
-
-export const createSeries: CreateFunction<SeriesTO> = async (db: VollieDrizzleConnection, event: SeriesTO): Promise<Existing<SeriesTO>> => {
-  return db.insert(SeriesTableTO).values(event).returning().then((result) => {
+export const createSeries: CreateFunction<SeriesTO> = async (db: VollieDrizzleConnection, series: Uninitialised<SeriesTO>): Promise<Existing<SeriesTO>> => {
+  return db.insert(SeriesTableTO).values(series).returning().then((result) => {
     if (result.length > 1) {
       throw new Error('Returned multiple results from insert');
     }
@@ -61,7 +56,6 @@ export const createSeries: CreateFunction<SeriesTO> = async (db: VollieDrizzleCo
     return result[0];
   });
 };
-
 
 export const updateSeries = async (db: VollieDrizzleConnection, series: Existing<SeriesTO>): Promise<SeriesId> => {
   const updateSeries: Partial<SeriesTO> = safeCheckAndCopy(series,

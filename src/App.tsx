@@ -3,17 +3,21 @@
 
 import './App.css';
 
-import { Link, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Route, Routes } from 'react-router-dom';
 
-import { EventFormPage } from './ui/Event.js';
-import { EventListPage } from './ui/EventList.js';
+import { FooterLinks } from './ui/Common.js';
 import { Index } from './ui/Index.js';
-import { OrganisationListPage } from './ui/OrganisationList.js';
-import { SeriesListPage } from './ui/SeriesList.js';
-import { VolliePageProps } from './ui/types.js';
-import { useCurrentUser } from './stores/index.js';
-import { useUi } from './stores/ui.js';
+import { MemoizedEventFormPage } from './ui/Event.js';
+import { MemoizedEventListPage } from './ui/EventList.js';
+import { MemoizedOrganisationFormPage } from './ui/Organisation.js';
+import { MemoizedOrganisationListPage } from './ui/OrganisationList.js';
+import { MemoizedSeriesFormPage } from './ui/Series.js';
+import { MemoizedSeriesListPage } from './ui/SeriesList.js';
+import { VollieHeader } from './ui/Header.js';
+
+// import { UiState, useUi } from './stores/ui.js';
+// import { useCurrentUser } from './stores/index.js';
 
 // import * as ReactDOM from 'react-dom';
 
@@ -114,10 +118,12 @@ const App = (): JSX.Element => {
   // const [loginUsername, _setLoginUsername] = useState<string|undefined>(defaultUser);
 
   const queryClient = new QueryClient();
-  const { currentUser } = useCurrentUser();
+  // const { currentUser } = useCurrentUser();
   // const [additionalFooters, setAdditionalFooters] = useState<JSX.Element | null>(null);
   // const [title, setTitle] = useState<string>('Vollie');
-  const uiState = useUi();
+  // const uiState: UiState = useUi(state => state);
+  // const title = useUi(state => state.title);
+  // const [uiPropState, setPropState] = useState<VolliePageProps>({ currentUser, addFooterLink: uiState.addFooterLink, setTitle: uiState.setTitle });
 
   // const safeSetAdditionalFooters = (footerComponents: JSX.Element[]): void => {
   //   if (FOOTERS_ENABLED) {
@@ -133,11 +139,11 @@ const App = (): JSX.Element => {
   //   }
   // };
 
-  const appProps: VolliePageProps = {
-    currentUser: currentUser,
-    addFooterLink: uiState.addLinkTarget,
-    setTitle: uiState.setPageTitle,
-  };
+  // const appProps: VolliePageProps = {
+  //   currentUser: useCurrentUser(state => state.currentUser),
+  //   addFooterLink: useUi(state => state.addLinkTarget),
+  //   setTitle: useUi(state => state.setPageTitle),
+  // };
 
   // const userStore = useUser();
   // const organisationStore = useOrganisation();
@@ -164,39 +170,30 @@ const App = (): JSX.Element => {
   //   },
   // ]);
 
-  const idString =
-    currentUser !== null
-      ? `${currentUser?.firstName} ${currentUser?.lastName} (${currentUser?.email})`
-      : 'Not logged in';
-
   console.log('Returning app router...');
+  // const uiStateProps: VolliePageProps = {
+  //   addFooterLink: uiState.addFooterLink,
+  //   setFooterLinks: uiState.setFooterLinks,
+  //   clearFooterLinks: uiState.clearFooterLinks,
+  //   setTitle: uiState.setTitle,
+  //   currentUser,
+  // }
   return (
     <>
-      <header>
-        {currentUser && <div className="loginUser">{idString}</div>}
-        <h2>{uiState.title}</h2>
-      </header>
+      <VollieHeader />
       <QueryClientProvider client={queryClient}>
         <Routes>
           <Route index element={<Index />} />
-          <Route path="/event/:eventId" element={<EventFormPage {...appProps} />} />
-          <Route path="/event/new" element={<EventFormPage {...appProps} />} />
-          <Route path="/event/list" element={<EventListPage {...appProps} />} />
-          <Route path="/events" element={<EventListPage {...appProps} />} />
-          <Route path="/organisations" element={<OrganisationListPage {...appProps} />} />
-          <Route path="/series" element={<SeriesListPage {...appProps} />} />
+          <Route path="/event/:eventId" element={<MemoizedEventFormPage />} />
+          <Route path="/event/list" element={<MemoizedEventListPage />} />
+          <Route path="/events" element={<MemoizedEventListPage />} />
+          <Route path="/organisations" element={<MemoizedOrganisationListPage />} />
+          <Route path="/series" element={<MemoizedSeriesListPage />} />
+          <Route path="/series/:seriesId" element={<MemoizedSeriesFormPage />} />
+          <Route path="/organisation/:organisationId" element={<MemoizedOrganisationFormPage />} />
         </Routes>
       </QueryClientProvider>
-      <footer>
-        {uiState.footerLinks.map((l) => (
-          <div>
-            <Link to={l.target}>{l.text}</Link>
-          </div>
-        ))}
-        <div className="linkHome">
-          <a href="/">Back to main</a>
-        </div>
-      </footer>
+      <FooterLinks />
     </>
   );
 };

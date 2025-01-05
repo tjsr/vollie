@@ -1,6 +1,7 @@
-import { Organisation, Series } from "../model/entity";
+import { Organisation, Series, User } from "../model/entity";
 
 import { RJSFSchema } from "@rjsf/utils";
+import { UserId } from "../model/id";
 
 export const getOrganisersDefinition = (organisers: Organisation[]): RJSFSchema => {
   // "organisers": {
@@ -19,11 +20,16 @@ export const getOrganisersDefinition = (organisers: Organisation[]): RJSFSchema 
   //     }
   //   ]
   // },
+  if (organisers?.length === 0) {
+    return undefined;
+  }
   return {
     enumNames: organisers.map((o) => o.entityName),
     enum: organisers.map((o) => ({ name: o.entityName, id: o.id }))
   };
-};export const getSeriesDefinition = (series: Series[], organisers: Organisation[]): RJSFSchema => {
+};
+
+export const getSeriesDefinition = (series: Series[], organisers: Organisation[]): RJSFSchema => {
   // "series": {
   //   "enumNames": [
   //     "2024 Summer No Frills",
@@ -57,3 +63,15 @@ export const getOrganisersDefinition = (organisers: Organisation[]): RJSFSchema 
   };
 };
 
+type IdentifiableUser = Partial<User> & { firstName: string, lastName: string, id: UserId}; 
+
+export const getUsersDefinition = (users: IdentifiableUser[]): RJSFSchema => {
+  if (users?.length === 0) {
+    return undefined;
+  }
+  const fullName = (u: IdentifiableUser): string => `${u.firstName} ${u.lastName}`;
+  return {
+    enumNames: users.map((u) => fullName(u)),
+    enum: users.map((u) => ({ name: fullName(u), id: u.id }))
+  };
+};

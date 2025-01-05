@@ -9,12 +9,20 @@ import { VollieDrizzleConnection } from '../../../types.js';
 import { eq } from "drizzle-orm";
 import { safeCheckAndCopy } from "./utils.js";
 
+type RaceEventSelectByIdResult = Awaited<ReturnType<typeof eventSelectById>>;
+type RaceEventSelectByIdResultItem = RaceEventSelectByIdResult extends Array<infer U> ? U : never;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const eventSelectToEventType = (result: any): RaceEvent => ({
+const eventSelectToEventType = (result: RaceEventSelectByIdResultItem): RaceEvent => {
+    if (!result.organiser) {
+      throw new VollieDatabaseError(`Organiser not found for event ${result.events.id}`);
+    }
+    return {
     ...result.events,
     series: result.series,
     organiser: result.organiser,
-  });
+  };
+};
 
 // const eventSelect = (db: DrizzleD1Database) => db.select({ events: EventsTable, series: SeriesTable, organiser: OrganisationsTable }).from(EventsTable).leftJoin(SeriesTable, );
 const eventSelectJoined = (db: VollieDrizzleConnection) => db
@@ -38,6 +46,8 @@ export const selectEventById = async (db: VollieDrizzleConnection, id: number): 
     if (result.length === 0) {
       return undefined;
     }
+    
+    // return result[0].events;
     const event: RaceEvent = eventSelectToEventType(result[0]);
     return event;
   });
@@ -45,14 +55,8 @@ export const selectEventById = async (db: VollieDrizzleConnection, id: number): 
   return resultPromise;
 };
 
-export const selectEvents = async (db: VollieDrizzleConnection): Promise<RaceEvent[]> => {
-  // const dbSelect = eventSelect(db);
-  // return eventSelectJoined(db);
-  const resultPromise = eventSelectAll(db).then((result) => {
-    return result.map((r) => eventSelectToEventType(r));
-  });
-  return resultPromise;
-}
+export const selectEvents = async (db: VollieDrizzleConnection): Promise<RaceEvent[]> => 
+  eventSelectAll(db);
 
 export const createEvent = async (db: VollieDrizzleConnection, event: RaceEventTO): Promise<RaceEventTO> => {
   return db.insert(EventsTableTO).values(event).returning().then((result) => {

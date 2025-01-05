@@ -1,7 +1,8 @@
-import { Accreditation, AccreditationFields } from "./accreditations";
+import { Accreditation, AccreditationFields } from "./accreditations.js";
+import { UserIdType, WithId } from "../idTypes.js";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-import { idPrimaryKey } from "./types";
+import { idPrimaryKey } from "./types.js";
 
 const accreditationReferenceId = () => integer('accreditation_id');
 const accreditationReferenceField = () => accreditationReferenceId().$type<Accreditation>();
@@ -16,8 +17,8 @@ export const UsersTable = sqliteTable('Users', {
   phone: text("phone").notNull(),
 });
 
-export type UserTO = typeof UsersTable.$inferSelect;
-export type User = UserTO;
+export type UserTO = WithId<UserIdType, typeof UsersTable.$inferSelect>;
+export type User = WithId<UserIdType, typeof UsersTable.$inferSelect>;
 
 export const UserAccreditationFieldsTable = sqliteTable('UserAccreditationFields', {
   id: idPrimaryKey(),

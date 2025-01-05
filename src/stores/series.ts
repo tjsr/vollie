@@ -1,7 +1,7 @@
 import { PartialSeries } from "../model/entity";
 import { create } from "zustand";
 
-interface SeriesState {
+export interface SeriesState {
   series: PartialSeries[];
   setSeries: (series: PartialSeries[]) => void;
   addSeries: (series: PartialSeries) => void;

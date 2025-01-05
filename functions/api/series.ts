@@ -1,8 +1,9 @@
-import { BodyValidateFunction, CreateFunction, UpdateFunction, ValidatedTOs, onHtmlRequest, resultForModelObject } from "../../src/functionUtils";
 import { Env, VollieDrizzleConnection } from "../../src/types";
-import { Existing, SeriesTO, TransferObject, Uninitialised } from "../../src/model/to";
-import { IdType, OrganisationId, SeriesId, validateId } from "../../src/model/id";
+import { OrganisationId, SeriesId, validateId } from "../../src/model/id";
+import { SeriesTO, TransferObject } from "../../src/model/to";
 import { createSeries, selectSeries, updateSeries } from "../../src/orm/drizzle/queries/series";
+import { onHtmlRequest, resultForModelObject } from "../../src/functionUtils";
+import { processGenericPost, processGenericPut, validateIdIfRequired } from "./generic";
 
 import { getDbConnectionFromEnv } from "../../src/orm";
 import { selectSeriesById } from "../../src/orm/drizzle/queries/series";
@@ -40,42 +41,74 @@ export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext
   return resultForModelObject(context, result);
 };
 
-export const validateSeriesBody: BodyValidateFunction<SeriesTO, SeriesId> = (body: Record<string, unknown|undefined>): ValidatedTOs<SeriesTO, SeriesId> => {
-  const to: Partial<SeriesTO> = {
-    name: body['name'] as string,
-    description: body['description'] as string,
-    organiser: body['organiser'] as OrganisationId,
-  };
-  if (body['id'] !== undefined) {
-    to.id = body['id'] as SeriesId;
-    return { updated: to as Existing<SeriesTO, SeriesId> };
-  }
-  return { created: to as Uninitialised<SeriesTO> };
-};
 
-// const validateSeriesId = (idParam: string | string[]): number => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// const _validateSeriesId = (idParam: string | string[]): number => {
 //   return validateId<SeriesId>(idParam, false);
 // };
 
-export const onJsonRequestPost: PagesFunction<Env> = async (context: EventContext<Env, 'seriesId', Record<string, unknown>>): Promise<Response> => {
-  return onGenericJsonRequestPost(createSeries, updateSeries, validateSeriesBody, context);
-};
-
-export const onGenericJsonRequestPost = async <TOBase, ID extends IdType, TO extends TransferObject<TOBase, ID>>(
-  createFn: CreateFunction<TOBase>,
-  updateFn: UpdateFunction<TO, ID>,
-  validateFn: BodyValidateFunction<TO, ID>,
-  context: EventContext<Env, string|never, Record<string, unknown>>): Promise<Response> => {
-  const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
-
-  console.log('onRequest called with POST');
-  const body = await context.request.json();
-  const { created, updated } = validateFn(body);
-  const createOrUpdate = created ? createFn(db, created) : updateFn(db, updated!);
-  return createOrUpdate
-    .then((result) => Response.json(result))
-    .catch((err) => {
-      console.error(err);
-      return Response.error();
+export const validateSeriesBody = async (
+  body: Record<string, unknown>, isNew: boolean
+): Promise<TransferObject<SeriesTO>> => {
+  return validateIdIfRequired(body, isNew)
+    .then(() => {
+      const to: Partial<SeriesTO> = {
+        name: body['name'] as string,
+        description: body['description'] as string,
+        organiser: body['organiser'] as OrganisationId,
+      };
+      if (body['id'] !== undefined) {
+        to.id = body['id'] as SeriesId;
+        return to as SeriesTO;
+      }
+      return to as SeriesTO;
     });
 };
+
+export const onJsonRequestPut: PagesFunction<Env> = async (
+  context: EventContext<Env, 'seriesId', Record<string, unknown>>
+): Promise<Response> => 
+  processGenericPut<
+    'seriesId',
+    EventContext<Env, 'seriesId', Record<string, unknown>>,
+    SeriesId,
+    SeriesTO
+  >(context, validateSeriesBody, updateSeries);
+
+export const onJsonRequestPost: PagesFunction<Env> = async (
+  context: EventContext<Env, 'seriesId', Record<string, unknown>>
+): Promise<Response> =>
+  processGenericPost<
+    'seriesId',
+    EventContext<Env, 'seriesId', Record<string, unknown>>,
+    SeriesId,
+    SeriesTO
+    // NewTO extends Uninitialised<unknown> = Uninitialised<unknown>
+  >(context, validateSeriesBody, createSeries);
+
+// export const onJsonRequestPost: PagesFunction<Env> = async (context: EventContext<Env, 'seriesId', Record<string, unknown>>): Promise<Response> => {
+//   return onGenericJsonRequestPost(createSeries, updateSeries, validateSeriesBody, context);
+// };
+
+// export const onGenericJsonRequestPost = async <TOBase, ID extends IdType, TO extends TransferObject<TOBase, ID>>(
+//   createFn: CreateFunction<TOBase>,
+//   updateFn: UpdateFunction<TO, ID>,
+//   validateFn: BodyValidateFunction<TO, ID>,
+//   context: EventContext<Env, string|never, Record<string, unknown>>): Promise<Response> => {
+//   const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
+
+//   console.log('series', 'onRequest called with POST');
+//   return context.request.json().then((body) => {
+//     const { created, updated } = validateFn(body as Record<string, unknown>);
+//     const createOrUpdate = created ? createFn(db, created) : updateFn(db, updated!);
+//     return createOrUpdate
+//       .then((result) => Response.json(result))
+//       .catch((err) => {
+//         console.error(err);
+//         return Response.error();
+//       });
+//   }).catch((err) => {
+//     console.error(err);
+//     throw err;
+//   });
+// };

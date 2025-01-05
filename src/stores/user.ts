@@ -9,7 +9,7 @@ export const user: PartialUser = {
 };
 
 
-interface UserState {
+export interface UserState {
   users: User[];
   setUsers: (users: User[]) => void;
   addUser: (user: User) => void;

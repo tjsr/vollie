@@ -2,17 +2,7 @@ import { Organisation, PartialOrganisation, PartialSeries, PartialUser, Series, 
 import { getOrganisersDefinition, getSeriesDefinition } from '../schemaDefinitions.js';
 
 import { RJSFSchema } from "@rjsf/utils";
-
-const isUserInOrg = (user: User, org: Organisation): boolean => {
-  if (user.organisations === undefined) {
-    return false;
-  }
-
-  if (user.organisations.map((o) => o.id).includes(org.id)) {
-    return true;
-  }
-  return false;
-};
+import { isUserInOrg } from '../../model/utils.js';
 
 export const createEventSchema = (organisers: PartialOrganisation[], series: PartialSeries[], user: PartialUser): RJSFSchema => {
   const permittedOrgs = organisers.filter((org) => isUserInOrg(user as User, org as Organisation)) as Organisation[];

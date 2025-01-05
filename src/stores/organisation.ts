@@ -2,7 +2,7 @@ import { Organisation } from '../model/entity';
 import { OrganisationId } from '../model/id';
 import { create } from 'zustand';
 
-interface OrganisationsState {
+export interface OrganisationsState {
   organisations: Organisation[];
   fetch: (id: OrganisationId) => Promise<Organisation>;
   setOrganisations: (organisations: Organisation[]) => void;

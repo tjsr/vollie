@@ -1,5 +1,5 @@
-import { OrganisationIdType, SeriesIdType, WithId } from "../idTypes";
 import { OrganisationsTable, organiserReferenceField, organiserReferenceId } from "./organisations";
+import { SeriesIdType, WithId } from "../idTypes";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import { idPrimaryKey } from "./types";
@@ -27,5 +27,6 @@ export const SeriesRelations = relations(SeriesTable, ({ one }) => (
   }
 ));
 
-export type SeriesTO = Omit<typeof SeriesTable.$inferInsert, 'organiser'> & { organiser: OrganisationIdType | null };
+// export type SeriesTO = Omit<typeof SeriesTableTO.$inferInsert, 'organiser'> & { organiser: OrganisationIdType | null };
+export type SeriesTO = WithId<SeriesIdType, typeof SeriesTableTO.$inferSelect>;
 export type Series = WithId<SeriesIdType, typeof SeriesTable.$inferSelect>;

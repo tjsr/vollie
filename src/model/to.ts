@@ -14,9 +14,10 @@ import { IdType } from './id.js';
 // }
 export type { UserTO, OrganisationTO, RaceEventTO, SeriesTO };
 
-export type Existing<T, TOIdType = IdType> = T & { id: TOIdType };
-export type TransferObject<T, TOIdType = IdType> = T & { id?: TOIdType };
+export type Existing<T, TOIdType extends IdType = IdType> = T & { id: TOIdType };
+export type TransferObject<T, TOIdType extends IdType = IdType> = T & { id?: TOIdType };
 export type Uninitialised<T> = Omit<T, 'id'>;
+
 export type NewRaceEventTO = Uninitialised<RaceEventTO>;
 export type NewOrganisationTO = Uninitialised<OrganisationTO>;
 export type NewSeriesTO = Uninitialised<SeriesTO>;

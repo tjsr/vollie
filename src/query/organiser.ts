@@ -1,8 +1,9 @@
 import { Organisation, PartialOrganisation, User } from "../model/entity";
-import { fetchJson, genericPost } from "./util";
+import { callGenericApiPost, fetchJson, useGenericQuery } from "./util";
 
 import { NewOrganisationTO } from "../model/to";
 import { OrganisationId } from "../model/id";
+import { useQuery } from "@tanstack/react-query";
 
 export const organisers: PartialOrganisation[] = [
   {
@@ -30,13 +31,35 @@ export const fetchOrganisation = async (organisationId: OrganisationId, currentU
 }
 
 export const postOrganisation = async (organisation: Organisation): Promise<Organisation> => {
-  return genericPost('/organisation', organisationFormToOrganisationTO, organisation);
+  return callGenericApiPost('/organisation', organisationFormToOrganisationTO, organisation);
 };
 
 const organisationFormToOrganisationTO = (data: Organisation): NewOrganisationTO => {
+  if (!data.contactUser) {
+    console.warn('No contact user set for new organisation');
+  }
   const to: NewOrganisationTO = {
     entityName: data.entityName,
-    contactUser: data.contactUser.id,
+    contactUser: data.contactUser?.id,
   };
   return to;
 };
+
+export const useAllOrganisationsQuery = (currentUser: User|null|undefined) => useQuery({
+  queryKey: ['organisations'],
+  queryFn: () => {
+    console.log('Fetching for All Orgs');
+    return fetchOrganisations(currentUser);
+  },
+});
+
+export const useOrganisationQuery = (
+  organisationId: OrganisationId|undefined,
+  currentUser: User|null|undefined
+) => useGenericQuery<Organisation, OrganisationId>(
+  'organisation',
+  'organisation',
+  organisationId,
+  currentUser,
+  fetchOrganisation
+);

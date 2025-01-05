@@ -12,7 +12,7 @@ export type PartialOrganisation = Partial<{
 
 export type PartialSeries = Partial<{
   [K in keyof Series]: K extends 'organiser' ? Partial<PartialOrganisation> : Series[K];
-}>;
+}> | Series;
 
 export type PartialUser = Partial<{ 
   [K in keyof User]: K extends 'organisations' ? PartialOrganisation[] : User[K];

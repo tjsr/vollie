@@ -1,7 +1,7 @@
 import { RaceEvent } from "../model/entity";
 import { create } from "zustand";
 
-interface EventState {
+export interface EventState {
   events: RaceEvent[];
   setEvents: (events: RaceEvent[]) => void;
   addEvent: (event: RaceEvent) => void;

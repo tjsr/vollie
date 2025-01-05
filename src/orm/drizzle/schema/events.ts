@@ -41,7 +41,7 @@ export const RaceEventsRelations = relations(EventsTable, ({ one }) => (
 
 // export type RaceEvent = typeof EventsTable.$inferSelect;
 // export type RaceEventTO = typeof EventsTableTO.$inferSelect; // Omit<typeof events.$inferSelect, 'organiser' | 'series'> & { series: SeriesId|null, organiser: OrganiserId };
-export type RaceEventTO = WithId<RaceEventsIdType, typeof EventsTableTO.$inferInsert>;
+export type RaceEventTO = WithId<RaceEventsIdType, typeof EventsTableTO.$inferSelect>;
 //export type RaceEvent = WithRefId<'organiser', OrganisationIdType, WithRefId<'series', SeriesIdType, WithId<RaceEventsIdType, typeof EventsTable.$inferSelect>>>;
 export type RaceEvent = WithId<RaceEventsIdType, typeof EventsTable.$inferSelect>;
 

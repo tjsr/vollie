@@ -1,7 +1,7 @@
 import { User } from "../model/entity";
 import { create } from "zustand";
 
-interface CurrentUserState {
+export interface CurrentUserState {
   currentUser: User | null;
   setCurrentUser: (currentUser: User) => void;
 }

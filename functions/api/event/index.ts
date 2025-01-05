@@ -2,12 +2,14 @@ import { Env, VollieDrizzleConnection } from "../../../src/types";
 import { EventId, validateId } from "../../../src/model/id";
 import { createEvent, selectEventById, updateEvent } from "../../../src/orm/drizzle/queries/raceevent";
 import { onHtmlRequest, resultForModelObject } from '../../../src/functionUtils';
+import { processGenericPost, processGenericPut } from "../generic";
 
 import { RaceEventTO } from "../../../src/model/to";
 // import { * as html } from '../index.html' as string;
 import { getDbConnectionFromEnv } from "../../../src/orm";
 
-export const validateEventBody = (body: Record<string, unknown>): RaceEventTO => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const validateEventBody = async (body: Record<string, unknown>, _isNew: boolean): Promise<RaceEventTO> => {
   const to: Partial<RaceEventTO> = {
     ...body,
   };
@@ -26,6 +28,8 @@ export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, s
     }
     if (context.request.method === 'POST') {
       return onJsonRequestPost(context);
+    } else if (context.request.method === 'PUT') {
+      return onJsonRequestPut(context);
     } else {
       return onJsonRequestGet(context);
     }
@@ -48,17 +52,70 @@ export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext
   return resultForModelObject(context, result);
 };
 
-export const onJsonRequestPost: PagesFunction<Env> = async (context: EventContext<Env, 'eventId', Record<string, unknown>>): Promise<Response> => {
-  const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
 
-  console.log('onRequest called with POST');
-  const body = await context.request.json();
-  const to = validateEventBody(body);
-  const createOrUpdate = !to.id ? createEvent(db, to) : updateEvent(db, to);
-  return createOrUpdate
-    .then((result) => Response.json(result))
-    .catch((err) => {
-      console.error(err);
-      return Response.error();
-    });
-};
+export const onJsonRequestPut: PagesFunction<Env> = async (
+  context: EventContext<Env, 'eventId', Record<string, unknown>>
+): Promise<Response> => 
+  processGenericPut<
+    'eventId',
+    EventContext<Env, 'eventId', Record<string, unknown>>,
+    EventId,
+    RaceEventTO
+  >(context, validateEventBody, updateEvent);
+//   {
+//   const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
+
+//   console.log('onRequest called with POST');
+//   return context.request.json().then((body: unknown) => {
+//     console.debug(body);
+
+//     const to = validateEventBody(body as Record<string, unknown>);
+//     if (!to.id) {
+//       console.warn('PUT request without ID:', to.id);
+//       return Response.error();
+//     }
+//     return updateEvent(db, to)
+//       .then((result) => Response.json(result))
+//       .catch((err) => {
+//         console.error(err);
+//         return Response.error();
+//       });
+//   }).catch((err: unknown) => {
+//     console.error('Error while converting event payload to JSON', err);
+//     throw err;
+//   });
+// };
+
+export const onJsonRequestPost: PagesFunction<Env> = async (
+  context: EventContext<Env, 'eventId', Record<string, unknown>>
+): Promise<Response> =>
+  processGenericPost<
+    'eventId',
+    EventContext<Env, 'eventId', Record<string, unknown>>,
+    EventId,
+    RaceEventTO
+    // NewTO extends Uninitialised<unknown> = Uninitialised<unknown>
+  >(context, validateEventBody, createEvent);
+// {
+//   const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
+
+//   console.log('onRequest called with POST');
+//   return context.request.json().then((body: unknown) => {
+//     console.debug(body);
+
+//     const to = validateEventBody(body as Record<string, unknown>);
+//     if (to.id) {
+//       console.warn('POST request with ID:', to.id);
+//       return Response.error();
+//     }
+//     return createEvent(db, to)
+//       .then((result) => Response.json(result))
+//       .catch((err) => {
+//         console.error(err);
+//         return Response.error();
+//       });
+//   }).catch((err: unknown) => {
+//     console.error('Error while converting event payload to JSON', err);
+//     throw err;
+//   });
+// };
