@@ -2,7 +2,7 @@ import { Accreditation, AccreditationFields } from "./accreditations.js";
 import { UserIdType, WithId } from "../idTypes.js";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-import { idPrimaryKey } from "./types.js";
+import { idPrimaryKey } from "./types";
 
 const accreditationReferenceId = () => integer('accreditation_id');
 const accreditationReferenceField = () => accreditationReferenceId().$type<Accreditation>();
