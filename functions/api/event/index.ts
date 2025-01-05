@@ -2,18 +2,29 @@ import { Env, VollieDrizzleConnection } from "../../../src/types";
 import { EventId, validateId } from "../../../src/model/id";
 import { createEvent, selectEventById, updateEvent } from "../../../src/orm/drizzle/queries/raceevent";
 import { onHtmlRequest, resultForModelObject } from '../../../src/functionUtils';
-import { processGenericPost, processGenericPut } from "../generic";
+import { processGenericPost, processGenericPut, validateIdIfRequired } from "../generic";
 
+import { DBType } from "../../../src/orm/types";
 import { RaceEventTO } from "../../../src/model/to";
-// import { * as html } from '../index.html' as string;
 import { getDbConnectionFromEnv } from "../../../src/orm";
 
+// import { * as html } from '../index.html' as string;
+
+
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const validateEventBody = async (body: Record<string, unknown>, _isNew: boolean): Promise<RaceEventTO> => {
-  const to: Partial<RaceEventTO> = {
-    ...body,
-  };
-  return to as RaceEventTO;
+export const validateEventBody = async (
+  _db: DBType,
+  body: Record<string, unknown>,
+  isNew: boolean
+): Promise<RaceEventTO> => {
+    return validateIdIfRequired(body, isNew)
+      .then(() => {  
+    const to: Partial<RaceEventTO> = {
+      ...body,
+    };
+    return to as RaceEventTO;
+  });
 };
 
 const validateEventId = (idParam: string | string[]): number => {

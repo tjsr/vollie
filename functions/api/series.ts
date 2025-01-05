@@ -5,6 +5,7 @@ import { createSeries, selectSeries, updateSeries } from "../../src/orm/drizzle/
 import { onHtmlRequest, resultForModelObject } from "../../src/functionUtils";
 import { processGenericPost, processGenericPut, validateIdIfRequired } from "./generic";
 
+import { DBType } from "../../src/orm/types";
 import { getDbConnectionFromEnv } from "../../src/orm";
 import { selectSeriesById } from "../../src/orm/drizzle/queries/series";
 
@@ -48,7 +49,9 @@ export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext
 // };
 
 export const validateSeriesBody = async (
-  body: Record<string, unknown>, isNew: boolean
+  _db: DBType,
+  body: Record<string, unknown>,
+  isNew: boolean
 ): Promise<TransferObject<SeriesTO>> => {
   return validateIdIfRequired(body, isNew)
     .then(() => {
