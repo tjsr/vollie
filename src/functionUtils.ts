@@ -36,7 +36,6 @@ export const onHtmlRequest: PagesFunction<Env> = async (context: EventContext<En
 </body>
 `, {
     headers: {
-      // 'content-type': 'text/plain;charset=UTF-8',
       'content-type': 'text/html;charset=UTF-8',
     },
   });
