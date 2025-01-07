@@ -5,6 +5,7 @@ import { onRequest as indexRequest } from "./index";
 import { notAllowedMethodHandler } from "../../../src/functionUtils";
 
 export const onNewRequest: PagesFunction<Env, 'new', NewRaceEventTO> = async (context: EventContext<Env, 'new', NewRaceEventTO>): Promise<Response> => {
+  console.log(onNewRequest, 'Got [eventId]=new');
   const outputEvent: RaceEventTO = {
     ...context.data,
     id: 123,

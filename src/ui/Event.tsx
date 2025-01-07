@@ -1,7 +1,7 @@
 import {  } from '../stores/organisation.js';
 
 import { Organisation, Series } from '../model/entity.js';
-import { PageLoadStatus, isReadyStatus, isValidLoadedStatus } from './util.js';
+import { PageLoadStatus, isReadyStatus, isValidLoadedStatus, log } from './util.js';
 import { QueryClient, useMutation } from '@tanstack/react-query';
 import { postEvent, useEventQuery } from '../query/event.js';
 import {
@@ -27,8 +27,6 @@ import validator from '@rjsf/validator-ajv8';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 const DEV_MODE = true;
-const log = (type: string) => console.log.bind(console, type);
-
 // const formData = {
 //   "firstName": "Chuck",
 //   "lastName": "Norris",
