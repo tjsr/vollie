@@ -21,6 +21,7 @@ export type Uninitialised<T> = Omit<T, 'id'>;
 export type NewRaceEventTO = Uninitialised<RaceEventTO>;
 export type NewOrganisationTO = Uninitialised<OrganisationTO>;
 export type NewSeriesTO = Uninitialised<SeriesTO>;
+export type NewUserTO = Uninitialised<UserTO>;
 
 // export interface EventTO extends TO<EventId> {
 //   name: string;
