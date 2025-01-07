@@ -37,11 +37,21 @@ const eventQuery = useAllEventsQuery(currentUser);
     return <div>No events found</div>;
   }
 
-  return <div>{
-    eventQuery.data?.map((event) => <div>
-      <div className="event-list-item">{event.name}</div>
+  if (eventQuery.data === undefined) {
+    return <div>Event data is undefined</div>;
+  }
+
+  console.log('Event data:', eventQuery.data);
+
+  return (
+    <div>
+      {eventQuery.data?.map((event) => (
+        <div>
+          <div className="event-list-item">{event.name}</div>
+        </div>
+      ))}
     </div>
-    )} </div>;
+  );
 };
 
 export const MemoizedEventListPage = React.memo(EventListPage);
