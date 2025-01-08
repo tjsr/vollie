@@ -1,16 +1,23 @@
 import * as VollieDrizzleSchema from './schema/index.js';
 
+import {
+  EventsTable as events,
+  OrganisationsTable as organisers,
+  SeriesTable as series,
+  UsersTable as users
+} from './schema/index.js';
+
 // export { EventsTable, SeriesTable } from './schema/events.js';
 // import { events, organisers, series } from './schema/index.js';
-import { EventsTable as events, OrganisationsTable as organisers, SeriesTable as series } from './schema/index.js';
+
 
 // export { OrganisationsTable } from './schema/organisations.js';
-export type { OrganisationTO } from './schema/organisations.js';
 
 export { UsersTable } from './schema/users.js';
 
 export type { RaceEventTO } from './schema/events.js';
 export type { SeriesTO } from './schema/series.js';
+export type { OrganisationTO } from './schema/organisations.js';
 export type { UserTO } from './schema/users.js';
 
 export { VollieDrizzleSchema };
@@ -19,6 +26,7 @@ export interface VollieDB {
   events: typeof events;
   series: typeof series;
   organisers: typeof organisers;
+  users: typeof users;
   // raceEventsRequiredRoles: typeof RaceEventRequiredRolesTable;
 }
 

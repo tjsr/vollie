@@ -1,10 +1,9 @@
 import { Existing, NewSeriesTO, SeriesTO } from "../model/to";
 import { PartialSeries, Series, User } from "../model/entity";
-import { callGenericApiPost, callGenericApiPut, fetchJson } from "./util";
+import { callGenericApiPost, callGenericApiPut, fetchJson, useGenericAllQuery, useGenericQuery } from "./util";
 
 import { SeriesId } from "../model/id";
 import { organisers } from "./organiser";
-import { useQuery } from "@tanstack/react-query";
 
 export const series: PartialSeries[] = [
   {
@@ -50,15 +49,11 @@ export const fetchAllSeries = async (currentUser: User|undefined|null): Promise<
   return fetchJson(`/series`, currentUser);
 };
 
-export const useSeriesQuery = (currentUser: User|null|undefined, seriesId?: SeriesId|undefined) => useQuery({
-  queryKey: ['series', seriesId],
-  queryFn: () => {
-    if (seriesId === undefined) {
-      console.log('Fetching for All Series');
-      return fetchAllSeries(currentUser);
-    } else {
-      console.log(`Fetching for Series ID: ${seriesId}`);
-      return fetchSeries(seriesId, currentUser);
-    }
-  },
-});
+export const useSeriesQuery = (currentUser: User|null|undefined, seriesId?: SeriesId|undefined) => useGenericQuery(
+  'series', 'series', seriesId, currentUser, fetchSeries
+);
+
+export const useAllSeriesQuery = (currentUser: User|null|undefined) => useGenericAllQuery(
+  'series', currentUser, fetchAllSeries
+);
+

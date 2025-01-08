@@ -7,7 +7,9 @@ export const createUserSchema = (): RJSFSchema => {
     type: "object",
     required: [
       "firstName",
-      "surname",
+      "lastName",
+      "email",
+      "phone"
     ],
     properties: {
       "firstName": {
@@ -15,10 +17,20 @@ export const createUserSchema = (): RJSFSchema => {
         "title": "First name",
         "default": "Joe"
       },
-      "surname": {
+      "lastName": {
         "type": "string",
-        "title": "Surname",
+        "title": "Last name",
         "default": "Bloggs"
+      },
+      "email": {
+        "type": "string",
+        "title": "Email",
+        "default": ""
+      },
+      "phone": {
+        "type": "string",
+        "title": "Phone",
+        "default": ""
       }
     }
   }

@@ -1,10 +1,12 @@
+import { Existing, Uninitialised } from "../../../model/to";
+import { User, UserTO } from "../schema/users.js";
+
+import { CreateFunction } from "../../../functionUtils";
+import { UserId } from "../../../model/id.js";
 import { UsersTable } from "../schema";
 import { VollieDatabaseError } from "../../errors";
 import { VollieDrizzleConnection } from "../../types";
 import { eq } from "drizzle-orm";
-import { User, UserTO } from "../schema/users.js";
-import { CreateFunction } from "../../../functionUtils";
-import { Existing, Uninitialised } from "../../../model/to";
 
 const userSelect = (db: VollieDrizzleConnection) => db
   .select({ users: UsersTable })
@@ -39,12 +41,17 @@ export const selectUserById = async (db: VollieDrizzleConnection, id: number): P
 export const selectAllUsers = async (db: VollieDrizzleConnection): Promise<User[]> => 
   userSelectAll(db);
 
-export const createUser: CreateFunction<UserTO> = async (db: VollieDrizzleConnection, users: Uninitialised<UserTO>): Promise<Existing<UserTO>> => {
-  return db.insert(UsersTable).values(users).returning().then((result) => {
+export const createUser: CreateFunction<UserTO> = async (db: VollieDrizzleConnection, user: Uninitialised<UserTO>): Promise<Existing<UserTO>> => {
+  return db.insert(UsersTable).values(user).returning().then((result) => {
     if (result.length > 1) {
-      throw new Error('Returned multiple results from insert');
+      throw new Error(`Returned multiple results from insert when creating ${JSON.stringify(user)}`);
     }
     console.log(`Created series with id ${result[0].id}`);
     return result[0];
   });
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const updateUser = async (_db: VollieDrizzleConnection, _user: Existing<UserTO>): Promise<UserId> => {
+  throw new Error('not yet implemented');
 };

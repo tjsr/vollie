@@ -20,8 +20,8 @@ import React from 'react';
 import { createEventSchema } from '../forms/event/fields.js';
 import { uiSchema as eventUiSchema } from '../forms/event/uiSchema.js';
 import { useAllOrganisationsQuery } from '../query/organiser.js';
+import { useAllSeriesQuery } from '../query/series.js';
 import { useIntOrNewParam } from '../stores/useIntOrNewParam.js';
-import { useSeriesQuery } from '../query/series.js';
 import validator from '@rjsf/validator-ajv8';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -41,7 +41,7 @@ const DEV_MODE = true;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const EventFormPage = (): React.ReactNode => {
-  const { setFooterLinks, setTitle } = useUi(state => state);
+  const { setFooterLinks, setTitle } = useUi((state) => state);
   const { currentUser } = useCurrentUser();
   const { eventId } = useIntOrNewParam();
   console.log(`Rendering events page for ${eventId}`);
@@ -51,9 +51,9 @@ export const EventFormPage = (): React.ReactNode => {
   const [userOrgs, setUserOrgs] = useState<Organisation[] | undefined>(undefined);
   const [userSeries, setUserSeries] = useState<Series[] | undefined>(undefined);
   const [loadingStatus, setLoadingStatus] = useState<PageLoadStatus>(PageLoadStatus.Initialised);
-  
+
   // const { orgData, orgDataError, orgDataLoading } = useQuery('organisations', fetchOrganisations);
-  
+
   useEffect(() => {
     setFooterLinks([{ target: '/events', text: 'Back to Events' }]);
     if (typeof eventId === 'string') {
@@ -102,7 +102,7 @@ export const EventFormPage = (): React.ReactNode => {
   // });
 
   const organisationQuery = useAllOrganisationsQuery(currentUser);
-  const seriesQuery = useSeriesQuery(currentUser);
+  const seriesQuery = useAllSeriesQuery(currentUser);
   const { series } = useSeries();
   const { organisations } = useOrganisation();
 
@@ -115,7 +115,6 @@ export const EventFormPage = (): React.ReactNode => {
 
   // const series = stateSet.series!.series;
   // const organisations = stateSet.organisations!.organisations;
-
 
   useEffect(() => {
     console.log('Main data changed...');
@@ -158,17 +157,15 @@ export const EventFormPage = (): React.ReactNode => {
         if (!series.organiser) {
           return false;
         }
-        
-          userOrgs?.map((org) => org.id).filter(id => id === series.organiser?.id);
+
+        userOrgs?.map((org) => org.id).filter((id) => id === series.organiser?.id);
       }) || [];
     setUserSeries(retrievedUserSeries as Series[]);
   }, [seriesQuery.data, userOrgs]);
 
   useEffect(() => {
-    if (seriesQuery.isError ||
-      (eventId !== null && eventQuery.isError) ||
-      organisationQuery.isError) {
-      setLoadingStatus(loadingStatus | PageLoadStatus.Error & ~PageLoadStatus.Ready);
+    if (seriesQuery.isError || (eventId !== null && eventQuery.isError) || organisationQuery.isError) {
+      setLoadingStatus(loadingStatus | (PageLoadStatus.Error & ~PageLoadStatus.Ready));
     } else {
       setLoadingStatus(loadingStatus & ~PageLoadStatus.Error);
     }
@@ -178,7 +175,7 @@ export const EventFormPage = (): React.ReactNode => {
     if (eventFormSchema && isValidLoadedStatus(loadingStatus) && !isReadyStatus(loadingStatus)) {
       setLoadingStatus(loadingStatus | PageLoadStatus.Ready);
     }
-  }, [eventFormSchema, loadingStatus])
+  }, [eventFormSchema, loadingStatus]);
 
   if (eventId === undefined) {
     return (
@@ -211,11 +208,9 @@ export const EventFormPage = (): React.ReactNode => {
     );
   }
 
-  console.log('Lodaing status:', loadingStatus)
+  console.log('Lodaing status:', loadingStatus);
   if (eventId !== null && !isReadyStatus(loadingStatus)) {
-    return <LoadingScreen
-      loadStatus={loadingStatus}
-    />
+    return <LoadingScreen loadStatus={loadingStatus} />;
   }
 
   console.log('Series:', series.length, series);
@@ -223,10 +218,26 @@ export const EventFormPage = (): React.ReactNode => {
 
   if (series.length === 0 || organisations.length === 0) {
     if (series.length === 0) {
-      return (<>
-        { organisations.length === 0 ? <div className="error nodata orgs">No organisations available for event creation. You will need to <Link href="/organisation/new">create an organisation</Link> before being able to create events.</div> : <></>}
-        { series.length === 0 ? <div className="error nodata series">No series available for event creation. You will need to <Link href="/series/new">create a series</Link> before being able to create events.</div> : <></>}
-        </>);
+      return (
+        <>
+          {organisations.length === 0 ? (
+            <div className="error nodata orgs">
+              No organisations available for event creation. You will need to{' '}
+              <Link href="/organisation/new">create an organisation</Link> before being able to create events.
+            </div>
+          ) : (
+            <></>
+          )}
+          {series.length === 0 ? (
+            <div className="error nodata series">
+              No series available for event creation. You will need to <Link href="/series/new">create a series</Link>{' '}
+              before being able to create events.
+            </div>
+          ) : (
+            <></>
+          )}
+        </>
+      );
     }
   }
 

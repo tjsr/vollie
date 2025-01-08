@@ -46,7 +46,7 @@ export const OrganisationFormPage = (): React.ReactNode => {
     },
   });
 
-  const orgQuery = useOrganisationQuery(organisationId || undefined, currentUser);
+  const orgQuery = useOrganisationQuery(currentUser, organisationId || undefined);
 
   useEffect(() => {
     console.log('Main organisation data changed...');

@@ -1,16 +1,16 @@
-import { Env, VollieDrizzleConnection } from "../../../src/types";
-import { EventId, validateId } from "../../../src/model/id";
+import { ApiModelContext, generateOnRequest, validateIdIfRequired } from "../generic";
 import { createEvent, selectEventById, updateEvent } from "../../../src/orm/drizzle/queries/raceevent";
-import { onHtmlRequest, resultForModelObject } from '../../../src/functionUtils';
-import { processGenericPost, processGenericPut, validateIdIfRequired } from "../generic";
 
 import { DBType } from "../../../src/orm/types";
+import { Env } from "../../../src/types";
+import { EventId } from "../../../src/model/id";
 import { RaceEventTO } from "../../../src/model/to";
-import { getDbConnectionFromEnv } from "../../../src/orm";
+import { onHtmlRequest } from '../../../src/functionUtils';
 
 // import { * as html } from '../index.html' as string;
 
-
+type EventIdKey = 'eventId';
+// type RaceEventContext = EventContext<Env, EventIdKey, Record<string, unknown>>;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const validateEventBody = async (
@@ -27,52 +27,50 @@ export const validateEventBody = async (
   });
 };
 
-const validateEventId = (idParam: string | string[]): number => {
-  return validateId<EventId>(idParam, false);
-};
-
-export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, string | 'new', Record<string, unknown>>) => {
+export const oldOnRequest: PagesFunction<Env> = async (context: EventContext<Env, string | 'new', Record<string, unknown>>) => {
   console.log('/event entrypoint: ', context.request.url);
   try {
     if (context.request.headers.get('content-type') !== 'application/json') {
       return onHtmlRequest(context);
     }
-    if (context.request.method === 'POST') {
-      return onJsonRequestPost(context);
-    } else if (context.request.method === 'PUT') {
-      return onJsonRequestPut(context);
-    } else {
-      return onJsonRequestGet(context);
-    }
+    // if (context.request.method === 'POST') {
+    //   return onJsonRequestPost(context);
+    // } else if (context.request.method === 'PUT') {
+    //   return onJsonRequestPut(context);
+    // } else {
+    // return procesGenericGetById(context);
+      return Response.json({});
+    // }
   } catch (err) {
     console.error(err);
     return Response.error();
   }
 };
 
-export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext<Env, 'eventId', Record<string, unknown>>): Promise<Response> => {
-  console.log(`event onRequest GET ${context.request.url} called`, context.params.eventId);
-  if (context.params.eventId === 'new') {
-    return Response.json({ });
-  }
-  const eventId: number = validateEventId(context.params.eventId);
-
-  const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
-
-  const result = await selectEventById(db, eventId);
-  return resultForModelObject(context, result);
+const api: ApiModelContext<RaceEventTO, EventId> = {
+  entrypoint: '/event',
+  idParam: 'eventId',
+  // validateId: validateEventId,
+  validateBody: validateEventBody,
+  create: createEvent,
+  select: selectEventById,
+  update: updateEvent,
 };
 
+export const onRequest: PagesFunction<Env> = generateOnRequest<EventId, RaceEventTO, EventIdKey>(api);
 
-export const onJsonRequestPut: PagesFunction<Env> = async (
-  context: EventContext<Env, 'eventId', Record<string, unknown>>
-): Promise<Response> => 
-  processGenericPut<
-    'eventId',
-    EventContext<Env, 'eventId', Record<string, unknown>>,
-    EventId,
-    RaceEventTO
-  >(context, validateEventBody, updateEvent);
+
+// const onJsonRequestPut: PagesFunction<Env> = async (
+//   context: RaceEventContext
+// ): Promise<Response> =>
+//   processGenericPut<
+//     EventIdKey,
+//     RaceEventContext,
+//     EventId,
+//     RaceEventTO
+//   >(context, validateEventBody, updateEvent);
+
+
 //   {
 //   const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
 
@@ -97,16 +95,17 @@ export const onJsonRequestPut: PagesFunction<Env> = async (
 //   });
 // };
 
-export const onJsonRequestPost: PagesFunction<Env> = async (
-  context: EventContext<Env, 'eventId', Record<string, unknown>>
-): Promise<Response> =>
-  processGenericPost<
-    'eventId',
-    EventContext<Env, 'eventId', Record<string, unknown>>,
-    EventId,
-    RaceEventTO
-    // NewTO extends Uninitialised<unknown> = Uninitialised<unknown>
-  >(context, validateEventBody, createEvent);
+// const onJsonRequestPost: PagesFunction<Env> = async (
+//   context: EventContext<Env, 'eventId', Record<string, unknown>>
+// ): Promise<Response> =>
+//   processGenericPost<
+//     EventIdKey,
+//     RaceEventContext,
+//     EventId,
+//     RaceEventTO
+//     // NewTO extends Uninitialised<unknown> = Uninitialised<unknown>
+//   >(context, validateEventBody, createEvent);
+
 // {
 //   const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
 

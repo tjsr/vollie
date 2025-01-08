@@ -1,11 +1,22 @@
 import { Env, VollieDrizzleConnection } from "../../src/types";
+import { IdType, validateId } from "../../src/model/id";
+import { onHtmlRequest, resultForModelObject } from "../../src/functionUtils";
 
 import { DBType } from "../../src/orm/types";
 import { Existing } from "../../src/model/to";
-import { IdType } from "../../src/model/id";
 import { ValidationError } from "../../src/model/errors";
 import { WithId } from "../../src/orm/drizzle/idTypes";
 import { getDbConnectionFromEnv } from "../../src/orm";
+
+export type ApiModelContext<TO, Id extends IdType> = {
+  entrypoint: string;
+  idParam: string;
+  validateId?: (idParam: string | string[]) => Id;
+  validateBody: (db: DBType, body: Record<string, unknown>, isNew: boolean) => Promise<TO>;
+  create: (db: DBType, to: TO) => Promise<TO>;
+  select: (db: DBType, id: Id) => Promise<WithId<Id, unknown>|undefined>;
+  update: (db: DBType, to: TO) => Promise<Id>;
+};
 
 const validateHasNoId = async (body: Record<string, unknown>): Promise<Record<string, unknown>> => {
   if (body['id'] !== undefined) {
@@ -129,4 +140,69 @@ export const processGenericPost = <
             .then((result) => Response.json(result)))
         .catch((err) => buildResponseFromError(err, requestBody))
     );
+};
+
+export const procesGenericGetById = async <
+  CtxType extends EventContext<Env, IdRequestParam, Record<string, unknown>> = EventContext<Env, string, Record<string, unknown>>,
+  IdRequestParam extends string = 'id',
+  ObjectId extends IdType = IdType,
+  Existing extends WithId<ObjectId, unknown> = WithId<ObjectId, unknown>
+>(
+  context: CtxType,
+  idParam: IdRequestParam,
+  validateIdFn: (idParam: string | string[]) => ObjectId = validateId,
+  selectById: (db: DBType, id: ObjectId) => Promise<Existing|undefined>,
+): Promise<Response> => {
+  const params: Params<IdRequestParam> = context.params;
+  const idParamValue = params[idParam];
+  console.log(`generic onRequest GET ${context.request.url} called`, idParamValue);
+  if (context.params[idParam] as string === 'new') {
+    return Response.json({});
+  }
+
+  const validatedId: ObjectId = validateIdFn(idParamValue);
+
+  const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
+
+  return selectById(db, validatedId).then((result) => resultForModelObject(context, result));
+};
+
+export const generateOnRequest = <
+  Id extends IdType = IdType,
+  TO extends WithId<Id, unknown> = WithId<Id, unknown>,
+  idKey extends string = 'id'
+  >(
+    api: ApiModelContext<TO, Id>
+): PagesFunction<Env> => {
+const returnFunc: PagesFunction<Env> = async (
+    context: EventContext<Env, idKey, Record<string, unknown>>
+  ): Promise<Response> => {
+    console.log(`${api.entrypoint} entrypoint: ${context.request.url}`);
+    try {
+      if (context.request.headers.get('content-type') !== 'application/json') {
+        return onHtmlRequest(context);
+      }
+      if (context.request.method === 'POST') {
+          return processGenericPost<
+            idKey,
+            EventContext<Env, idKey, Record<string, unknown>>,
+            Id,
+            TO
+          >(context, api.validateBody, api.create);
+      } else if (context.request.method === 'PUT') {
+        return processGenericPut<
+          idKey,
+          EventContext<Env, idKey, Record<string, unknown>>,
+          Id,
+          TO
+        >(context, api.validateBody, api.update);
+      } else {
+        return procesGenericGetById(context, api.idParam, api.validateId, api.select);
+      }
+    } catch (err) {
+      console.error(err);
+      return Response.error();
+    }  
+  };
+  return returnFunc;
 };

@@ -12,16 +12,40 @@ export const Index = (): JSX.Element => {
   },[setTitle, clearFooterLinks]);
 
   const { currentUser } = useCurrentUser();
-  return (<>
-    <ul>
-      <li><Link to="/event/1">Event</Link></li>
-      <li><Link to="/events">Event list</Link></li>
-      <li><Link to="/organisations">Organisations</Link></li>
-      <li><Link to="/series">Series</Link></li>
-      <li><Link to="/organisation/new">New Organisation</Link></li>
-    </ul>
+  return (
+    <>
+      <ul>
+        <li>
+          <Link to="/event/1">Sample event</Link>
+        </li>
+        <li>
+          <Link to="/events">Event list</Link>
+        </li>
+        <li>
+          <Link to="/event/new">New event</Link>
+        </li>
+        <li>
+          <Link to="/series">Series</Link>
+        </li>
+        <li>
+          <Link to="/series/new">New series</Link>
+        </li>
+        <li>
+          <Link to="/organisations">Organisations</Link>
+        </li>
+        <li>
+          <Link to="/organisation/new">New Organisation</Link>
+        </li>
+        <li>
+          <Link to="/users">Users list</Link>
+        </li>
+        <li>
+          <Link to="/user/new">New user</Link>
+        </li>
+      </ul>
 
-    { !currentUser && <Link to="/login">Login</Link> }
-    { currentUser && <Link to="/logout">Logout</Link> }
-  </>);
+      {!currentUser && <Link to="/login">Login</Link>}
+      {currentUser && <Link to="/logout">Logout</Link>}
+    </>
+  );
 };

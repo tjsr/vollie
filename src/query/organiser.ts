@@ -54,8 +54,8 @@ export const useAllOrganisationsQuery = (currentUser: User|null|undefined) => us
 });
 
 export const useOrganisationQuery = (
+  currentUser: User|null|undefined,
   organisationId: OrganisationId|undefined,
-  currentUser: User|null|undefined
 ) => useGenericQuery<Organisation, OrganisationId>(
   'organisation',
   'organisation',

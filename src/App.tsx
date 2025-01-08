@@ -4,17 +4,10 @@
 import './App.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Route, Routes } from 'react-router-dom';
 
 import { FooterLinks } from './ui/Common.js';
-import { Index } from './ui/Index.js';
-import { MemoizedEventFormPage } from './ui/Event.js';
-import { MemoizedEventListPage } from './ui/EventList.js';
-import { MemoizedOrganisationFormPage } from './ui/Organisation.js';
-import { MemoizedOrganisationListPage } from './ui/OrganisationList.js';
-import { MemoizedSeriesFormPage } from './ui/Series.js';
-import { MemoizedSeriesListPage } from './ui/SeriesList.js';
 import { VollieHeader } from './ui/Header.js';
+import { VollieRoutes } from './ui/Routes.js';
 
 // import { UiState, useUi } from './stores/ui.js';
 // import { useCurrentUser } from './stores/index.js';
@@ -171,27 +164,11 @@ const App = (): JSX.Element => {
   // ]);
 
   console.log('Returning app router...');
-  // const uiStateProps: VolliePageProps = {
-  //   addFooterLink: uiState.addFooterLink,
-  //   setFooterLinks: uiState.setFooterLinks,
-  //   clearFooterLinks: uiState.clearFooterLinks,
-  //   setTitle: uiState.setTitle,
-  //   currentUser,
-  // }
   return (
     <>
       <VollieHeader />
       <QueryClientProvider client={queryClient}>
-        <Routes>
-          <Route index element={<Index />} />
-          <Route path="/event/:eventId" element={<MemoizedEventFormPage />} />
-          <Route path="/event/list" element={<MemoizedEventListPage />} />
-          <Route path="/events" element={<MemoizedEventListPage />} />
-          <Route path="/organisations" element={<MemoizedOrganisationListPage />} />
-          <Route path="/series" element={<MemoizedSeriesListPage />} />
-          <Route path="/series/:seriesId" element={<MemoizedSeriesFormPage />} />
-          <Route path="/organisation/:organisationId" element={<MemoizedOrganisationFormPage />} />
-        </Routes>
+        <VollieRoutes />
       </QueryClientProvider>
       <FooterLinks />
     </>

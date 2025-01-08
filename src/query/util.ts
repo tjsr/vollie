@@ -86,15 +86,16 @@ export const useGenericQuery = <ReturnType extends object, IdType>(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   id: IdType|undefined,
   currentUser: User|null|undefined,
-  fetchMethod: (_fetchId: IdType, _fetchCurrentUser: typeof currentUser) => Promise<ReturnType|void>,
+  fetchMethod: (_fetchId: IdType, _fetchCurrentUser: typeof currentUser) => Promise<ReturnType | void>
 ) => useQuery({
   enabled: !!id,
   queryKey: [queryKey, id],
   queryFn: () => {
     if (!id || (typeof id === 'number' && id <= 0)) {
-      console.warn(`Skipped event load because ${key}Id=${id}`);
-      return;
+        console.warn(`Skipped event load because ${key}Id=${id}`);
+        return;
     }
+
     if (!currentUser) {
       throw new Error('No current user to load event');
     }
@@ -107,5 +108,19 @@ export const useGenericQuery = <ReturnType extends object, IdType>(
       console.error(`Failed to fetch ${key}: ${id}`, err);
       throw err;
     });
+  },
+});
+
+
+export const useGenericAllQuery = <ReturnType extends object>(
+  queryKey: string,
+  currentUser: User|null|undefined,
+  fetchAll: (_fetchCurrentUser: typeof currentUser) => Promise<ReturnType[]>) => useQuery({
+  queryKey: [queryKey],
+  queryFn: () => {
+    if (!currentUser) {
+      throw new Error(`No current user to load ${queryKey}.`);
+    }
+    return fetchAll(currentUser);
   },
 });
