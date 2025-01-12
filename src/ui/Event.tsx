@@ -1,20 +1,14 @@
 import {  } from '../stores/organisation.js';
 
+import { LoadingScreen, RequiredDataError } from './Common.js';
 import { Organisation, Series } from '../model/entity.js';
 import { PageLoadStatus, isReadyStatus, isValidLoadedStatus, log } from './util.js';
 import { QueryClient, useMutation } from '@tanstack/react-query';
 import { postEvent, useEventQuery } from '../query/event.js';
-import {
-  useCurrentUser,
-  useOrganisation,
-  useSeries,
-  useUi
-} from '../stores/index.js';
+import { useCurrentUser, useOrganisation, useSeries, useUi } from '../stores/index.js';
 import { useEffect, useState } from 'react';
 
 import { Form } from '@rjsf/mui';
-import { Link } from '@mui/material';
-import { LoadingScreen } from './Common.js';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
 import { createEventSchema } from '../forms/event/fields.js';
@@ -217,28 +211,12 @@ export const EventFormPage = (): React.ReactNode => {
   console.log('Organisations:', organisations.length, organisations);
 
   if (series.length === 0 || organisations.length === 0) {
-    if (series.length === 0) {
-      return (
-        <>
-          {organisations.length === 0 ? (
-            <div className="error nodata orgs">
-              No organisations available for event creation. You will need to{' '}
-              <Link href="/organisation/new">create an organisation</Link> before being able to create events.
-            </div>
-          ) : (
-            <></>
-          )}
-          {series.length === 0 ? (
-            <div className="error nodata series">
-              No series available for event creation. You will need to <Link href="/series/new">create a series</Link>{' '}
-              before being able to create events.
-            </div>
-          ) : (
-            <></>
-          )}
-        </>
-      );
-    }
+    return (
+      <>
+        <RequiredDataError condition={!(organisations?.length > 0)} missingType="organisations" creationType="events" />
+        <RequiredDataError condition={!(series?.length > 0)} missingType="series" creationType="events" />
+      </>
+    );
   }
 
   return (

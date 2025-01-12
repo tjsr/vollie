@@ -1,23 +1,24 @@
-import { PageLoadStatus, isReadyStatus, log } from "./util";
-import { QueryClient, useMutation } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
-import { postOrganisation, useOrganisationQuery } from "../query/organiser.js";
-import { useCurrentUser, useUi, useUser } from "../stores";
+import { PageLoadStatus, isReadyStatus, log, pageLoadStatusString } from './util';
+import { QueryClient, useMutation } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { postOrganisation, putOrganisation, useOrganisationQuery } from '../query/organiser.js';
+import { useCurrentUser, useUi, useUser } from '../stores';
 
-import { Form } from "@rjsf/mui";
-import { LoadingScreen } from "./Common.js";
-import { RJSFSchema } from "@rjsf/utils";
-import { createOrgSchema } from "../forms/organiser/fields.js";
+import { Form } from '@rjsf/mui';
+import { LoadingScreen } from './Common.js';
+import { RJSFSchema } from '@rjsf/utils';
+import { createOrgSchema } from '../forms/organiser/fields.js';
 import { uiSchema as orgUiSchema } from '../forms/organiser/uiSchema.js';
-import { useIntOrNewParam } from "../stores/useIntOrNewParam.js";
+import { useAllUsersQuery } from '../query/user.js';
+import { useIntOrNewParam } from '../stores/useIntOrNewParam.js';
 import validator from '@rjsf/validator-ajv8';
 
 export const OrganisationFormPage = (): React.ReactNode => {
-  const { setFooterLinks, setTitle } = useUi(state => state);
+  const { setFooterLinks, setTitle } = useUi((state) => state);
   const { currentUser } = useCurrentUser();
   const { organisationId } = useIntOrNewParam();
   const [orgFormSchema, setOrgFormSchema] = useState<RJSFSchema | undefined>();
-  const { users } = useUser();
+  const { users, addOrUpdateUsers } = useUser();
 
   const queryClient = new QueryClient();
   const [loadingStatus, setLoadingStatus] = useState<PageLoadStatus>(PageLoadStatus.Initialised);
@@ -33,13 +34,13 @@ export const OrganisationFormPage = (): React.ReactNode => {
         setTitle('Create organisation');
       }
     } else {
-      console.log('eventId may have changed, but is not string: ', organisationId);
+      console.log('organisationId may have changed, but is not string: ', organisationId);
     }
   }, [organisationId, setFooterLinks, setTitle]);
 
   // Mutations
   const saveOrg = useMutation({
-    mutationFn: postOrganisation,
+    mutationFn: organisationId === undefined ? postOrganisation : putOrganisation,
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['organisations'] });
@@ -47,35 +48,64 @@ export const OrganisationFormPage = (): React.ReactNode => {
   });
 
   const orgQuery = useOrganisationQuery(currentUser, organisationId || undefined);
+  const usersQuery = useAllUsersQuery(currentUser);
 
   useEffect(() => {
-    console.log('Main organisation data changed...');
+    console.log('Main user data changed...');
+    const isLoaded = loadingStatus & PageLoadStatus.Loaded;
+    const hasError = loadingStatus & PageLoadStatus.Error;
+    if (usersQuery.data && !isLoaded && !hasError) {
+      console.log('Setting users from query data.');
+      addOrUpdateUsers(usersQuery.data);
+      const updatedStatus = (loadingStatus & ~PageLoadStatus.Loading & ~PageLoadStatus.Error) | PageLoadStatus.Loaded;
+      if (loadingStatus !== updatedStatus) {
+        setLoadingStatus(updatedStatus);
+      }
+    }
+  }, [usersQuery.data, loadingStatus, setLoadingStatus, addOrUpdateUsers]);
+
+  useEffect(() => {
     if (currentUser) {
       setOrgFormSchema(createOrgSchema(users));
+      setLoadingStatus(PageLoadStatus.Ready);
     } else {
+      const updatedLoadingStatus = loadingStatus | PageLoadStatus.NotLoggedIn;
+      updatedLoadingStatus !== loadingStatus && setLoadingStatus(updatedLoadingStatus);
+
       console.log('Not logged in - not loading organisation from schema.');
     }
-  }, [orgQuery.data, currentUser, users]);
+  }, [currentUser, users, loadingStatus, setOrgFormSchema, setLoadingStatus]);
 
   useEffect(() => {
-    if (organisationId !== null && orgQuery.isError) {
-      setLoadingStatus(loadingStatus | PageLoadStatus.Error & ~PageLoadStatus.Ready);
-    } else {
-      setLoadingStatus(loadingStatus & ~PageLoadStatus.Error);
+    let updatedLoadingStatus = loadingStatus;
+    if (orgFormSchema === undefined) {
+      updatedLoadingStatus = loadingStatus | PageLoadStatus.SchemaNotLoaded;
     }
-  }, [loadingStatus, organisationId, orgQuery.isError]);
+    if (organisationId !== null && orgQuery.isError) {
+      updatedLoadingStatus = loadingStatus | (PageLoadStatus.Error & ~PageLoadStatus.Ready);
+    } else {
+      updatedLoadingStatus = loadingStatus & ~PageLoadStatus.Error;
+    }
+    if (updatedLoadingStatus != loadingStatus) {
+      setLoadingStatus(updatedLoadingStatus);
+    }
+  }, [loadingStatus, organisationId, orgQuery.isError, orgFormSchema]);
+
+  useEffect(() => {
+    if (orgFormSchema !== undefined) {
+      setLoadingStatus(PageLoadStatus.Ready);
+    }
+  }, [orgFormSchema]);
 
   console.log(`Rendering organisation page for ${organisationId || 'new organisation'}`);
 
-  console.log('Lodaing status:', loadingStatus)
+  console.log('Lodaing status:', pageLoadStatusString(loadingStatus));
   if (organisationId !== null && !isReadyStatus(loadingStatus)) {
-    return <LoadingScreen
-      loadStatus={loadingStatus}
-    />
+    return <LoadingScreen loadStatus={loadingStatus} />;
   }
 
   if (orgFormSchema === undefined) {
-    return ('Org form schema not loaded.');
+    return 'Org form schema not loaded.';
   }
 
   return (

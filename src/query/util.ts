@@ -1,4 +1,4 @@
-import { InvalidContentError, NotFoundError } from "../types";
+import { InvalidContentError, InvalidContentTypeError, NotFoundError, VollieError } from "../types";
 
 import { IdType } from "../model/id";
 import { User } from "../model/entity";
@@ -34,7 +34,7 @@ export const callGenericApiPut = async <ExistingTO, Model>(url: string, conversi
   const apiUrl: string = '/api' + url;
   const formTransferObject: ExistingTO = conversionFunction(data);
   const body = JSON.stringify(formTransferObject);
-  console.trace(callGenericApiPost.name, apiUrl, data, formTransferObject);
+  console.trace(callGenericApiPut.name, apiUrl, data, formTransferObject);
   const response: Response = await fetch(apiUrl, {
     method: 'PUT',
     headers: {
@@ -55,8 +55,16 @@ export const callGenericApiPut = async <ExistingTO, Model>(url: string, conversi
 };
 
 export const checkContentType = (response: Response, url: string, contentType: string = 'application/json'): void => {
-  if (response.headers.get('content-type') !== contentType) {
-    throw new InvalidContentError(`Invalid content type while fetching ${url}`);
+  const received = response.headers.get('content-type');
+  let error: VollieError|undefined = undefined;
+  if (!received) {
+    error = new InvalidContentError(`No content type while fetching ${url}`);
+  } else if (received !== contentType) {
+    error = new InvalidContentTypeError(received, url, contentType)
+  }
+  if (error) {
+    error.status = response.status;
+    throw error;
   }
 };
 
@@ -65,7 +73,7 @@ export const fetchJson = async <O extends WithId<ID, any>, ID extends IdType>(ur
   const fetchUrl = '/api' + url;
   console.log(`fetchJson ${fetchUrl} called`);
   const response = await fetch(fetchUrl, { method: 'GET', headers: { 'Content-Type': 'application/json', 'User': currentUser?.email || 'none' } });
-  checkContentType(response, url);
+  checkContentType(response, fetchUrl);
   if (response.status === 404) {
     throw new NotFoundError(`Failed to fetch ${url}`);
   } else if (response.status >= 400) {
@@ -105,12 +113,11 @@ export const useGenericQuery = <ReturnType extends object, IdType>(
         console.error(`${key} not found: ${id}`);
         throw err;
       }
-      console.error(`Failed to fetch ${key}: ${id}`, err);
+      console.error(`Failed to fetch ${key}: ${id}`, err, err.status);
       throw err;
     });
   },
 });
-
 
 export const useGenericAllQuery = <ReturnType extends object>(
   queryKey: string,

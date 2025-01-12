@@ -1,15 +1,72 @@
-import { PageLoadStatus, isReadyStatus, isValidLoadedStatus } from "./util";
-import React, { useState } from "react";
-import { useCurrentUser, useOrganisation } from "../stores";
+import { Organisation, User } from '../model/entity';
+import { PageLoadStatus, isReadyStatus, isValidLoadedStatus, pageLoadStatusString } from './util';
+import React, { useState } from 'react';
+import { useCurrentUser, useOrganisation } from '../stores';
 
-import { LoadingScreen } from "./Common";
-import { useAllOrganisationsQuery } from "../query/organiser";
-import { useEffect } from "react";
-import { useUi } from "../stores/ui";
+import Link from '@mui/material/Link';
+import { LoadingScreen } from './Common';
+import { useAllOrganisationsQuery } from '../query/organiser';
+import { useEffect } from 'react';
+import { useUi } from '../stores/ui';
+
+const ContactSummary = ({ contactUser }: { contactUser: Partial<User> }): React.ReactNode => {
+  const idEmail = `${contactUser.id}-email`;
+  const idName = `${contactUser.id}-name`;
+  console.debug('ContactSummary', 'Got User', contactUser);
+  const hasContactDetails = contactUser.firstName || contactUser.lastName || contactUser.email;
+  if (hasContactDetails) {
+    return <div>Organisation had contact which has no details available</div>;
+  }
+  return (
+    <div className="contact-detail">
+      <h4>Contact</h4>
+      {(contactUser.firstName || contactUser.lastName) && (
+        <>
+          <label htmlFor={idName}>Name</label>
+          <span id={idName} className="name">
+            <span className="firstName">{contactUser.firstName}</span>
+            <span className="lastName">{contactUser.lastName}</span>
+          </span>
+        </>
+      )}
+      {contactUser.email && (
+        <>
+          <label htmlFor={idEmail}>email</label>
+          <span id={idEmail} className="email">
+            {contactUser.email}
+          </span>
+        </>
+      )}
+    </div>
+  );
+};
+
+const OrganisationDetailPane = ({ organisation }: { organisation: Organisation }): React.ReactNode => {
+  const user = organisation.contactUser;
+  const orgLink = `/organisation/${organisation.id}`;
+
+  if (!user) {
+    return (
+      <div className="organisation-detail error">
+        <h3>{organisation.entityName}</h3>
+        <Link href={orgLink}>Edit</Link>
+        <div className="errorMessage">Organisation has no contact user.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="organisation-detail">
+      <h3>{organisation.entityName}</h3>
+      <Link href={orgLink}>Edit</Link>
+      <ContactSummary contactUser={user} />
+    </div>
+  );
+};
 
 export const OrganisationListPage = (): JSX.Element => {
   const { currentUser } = useCurrentUser();
-  const { setFooterLinks, setTitle } = useUi(state => state);
+  const { setFooterLinks, setTitle } = useUi((state) => state);
   const [loadingStatus, setLoadingStatus] = useState<PageLoadStatus>(PageLoadStatus.Initialised);
   const orgQuery = useAllOrganisationsQuery(currentUser);
 
@@ -23,8 +80,8 @@ export const OrganisationListPage = (): JSX.Element => {
     setTitle('Organisations');
   }, [setTitle, setFooterLinks]);
 
-  const orgStore = useOrganisation(state => state);
-  
+  const orgStore = useOrganisation((state) => state);
+
   // const orgQuery = useQuery({
   //   queryKey: ['organisation'],
   //   queryFn: () => {
@@ -38,54 +95,52 @@ export const OrganisationListPage = (): JSX.Element => {
   // });
 
   useEffect(() => {
-    console.log('orgQuery Loading status changed', loadingStatus);
+    console.log('orgQuery data changed', orgQuery.data);
+    if (orgQuery.data && orgQuery.data !== orgStore.organisations) {
+      orgStore.setOrganisations(orgQuery.data);
+    }
+  }, [orgQuery.data, orgStore]);
+
+  useEffect(() => {
+    console.log('orgQuery Loading status changed', pageLoadStatusString(loadingStatus));
     let updatedStatus = loadingStatus;
     if (orgQuery.isLoading) {
       updatedStatus = updatedStatus | PageLoadStatus.Loading;
     } else {
-      if (orgQuery.isError) {
-        updatedStatus = updatedStatus & ~PageLoadStatus.Error;
-      }
       updatedStatus = updatedStatus & ~PageLoadStatus.Loading;
-      
     }
+    if (orgQuery.isError) {
+      updatedStatus = updatedStatus | PageLoadStatus.Error;
+    }
+    if (isValidLoadedStatus(updatedStatus) && !isReadyStatus(updatedStatus)) {
+      updatedStatus = updatedStatus | PageLoadStatus.Ready;
+    }
+
     if (updatedStatus !== loadingStatus) {
       setLoadingStatus(updatedStatus);
     }
   }, [loadingStatus, orgQuery.isLoading, orgQuery.isError]);
 
-  useEffect(() => {
-    console.log('Loading status changed', loadingStatus);
-    if (isValidLoadedStatus(loadingStatus) && !isReadyStatus(loadingStatus)) {
-      setLoadingStatus(loadingStatus | PageLoadStatus.Ready);
-    }
-  }, [loadingStatus]);
-
-  console.log('Lodaing status:', loadingStatus)
+  console.log('Lodaing status:', pageLoadStatusString(loadingStatus));
   if (!isReadyStatus(loadingStatus)) {
-    return <LoadingScreen
-      loadStatus={loadingStatus}
-    />
+    return <LoadingScreen loadStatus={loadingStatus} />;
   }
 
   if (orgQuery.isError) {
     return <p>Error: {orgQuery.error.message}</p>;
   }
 
-  if (orgStore.organisations.length === 0) {
+  if (orgStore.organisations === undefined || orgStore.organisations.length === 0) {
     return <p>No organisations found</p>;
   }
 
-  return <div>
-    {orgStore.organisations.map((org) => (
-      <div key={org.id}>
-        <h3>{org.entityName}</h3>
-        <p>Contact: {org.contactUser.email}</p>
-      </div>  
-    ))}
-
-  </div>;
-
+  return (
+    <>
+      {orgStore.organisations.map((org: Organisation) => (
+        <OrganisationDetailPane key={org.id} organisation={org} />
+      ))}
+    </>
+  );
 };
 
 export const MemoizedOrganisationListPage = React.memo(OrganisationListPage);

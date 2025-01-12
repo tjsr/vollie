@@ -165,3 +165,5 @@ export const onJsonRequestPost: PagesFunction<Env> = async (
   //   return Response.json()
   // });
 };
+
+export default onRequest;

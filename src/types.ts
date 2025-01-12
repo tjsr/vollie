@@ -6,6 +6,8 @@ export interface Env {
 
 
 export class VollieError extends Error {
+  status: number = 500;
+
   constructor(message: string, cause?: Error) {
       super(message, cause);
       this.name = this.constructor.name;
@@ -29,6 +31,15 @@ export class BadRequestError extends VollieError {
 export class InvalidContentError extends VollieError {
   constructor(message: string, cause?: Error) {
       super(message, cause);
+      this.name = this.constructor.name;
+  }
+}
+
+export class InvalidContentTypeError extends InvalidContentError {
+  constructor(received: string, url: string, expected: string | undefined, cause?: Error) {
+    super(
+      `Invalid content type while fetching ${url}, got ${received}${expected !== undefined ? ' but expected ' + expected : ''}`,
+      cause);
       this.name = this.constructor.name;
   }
 }

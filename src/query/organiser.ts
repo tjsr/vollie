@@ -1,5 +1,5 @@
 import { Organisation, PartialOrganisation, User } from "../model/entity";
-import { callGenericApiPost, fetchJson, useGenericQuery } from "./util";
+import { callGenericApiPost, callGenericApiPut, fetchJson, useGenericQuery } from "./util";
 
 import { NewOrganisationTO } from "../model/to";
 import { OrganisationId } from "../model/id";
@@ -32,6 +32,10 @@ export const fetchOrganisation = async (organisationId: OrganisationId, currentU
 
 export const postOrganisation = async (organisation: Organisation): Promise<Organisation> => {
   return callGenericApiPost('/organisation', organisationFormToOrganisationTO, organisation);
+};
+
+export const putOrganisation = async (organisation: Organisation): Promise<Organisation> => {
+  return callGenericApiPut(`/organisation/${organisation.id}`, organisationFormToOrganisationTO, organisation);
 };
 
 const organisationFormToOrganisationTO = (data: Organisation): NewOrganisationTO => {

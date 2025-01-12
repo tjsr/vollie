@@ -66,6 +66,7 @@ export const getSeriesDefinition = (series: Series[], organisers: Organisation[]
 type IdentifiableUser = Partial<User> & { firstName: string, lastName: string, id: UserId}; 
 
 export const getUsersDefinition = (users: IdentifiableUser[]): RJSFSchema => {
+  console.log('getUsersDefinition', users);
   if (users?.length === 0) {
     return undefined;
   }
