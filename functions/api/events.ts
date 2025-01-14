@@ -39,6 +39,14 @@ export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, '
     return notAllowedMethodHandler(context);
   }
 
+  // const res = db.run(sql`PRAGMA table_list`);
+  // return res.then((result) => {
+  //   console.log(result);
+  //   return Response.json(result);
+  // }).catch((err) => {
+  //   console.error(err);
+  //   return Response.json(err);
+  // });
   // const tables = await context.env.VOLLIE_DB.prepare(`PRAGMA table_list`).all();
   // console.log(tables);
   

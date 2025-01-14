@@ -1,4 +1,4 @@
-import { callGenericApiPost, callGenericApiPut, fetchJson, useGenericAllQuery, useGenericQuery } from "./util";
+import { callGenericApiPost, callGenericApiPut, fetchJson, genericSave, useGenericAllQuery, useGenericQuery } from "./util";
 
 import { NewUserTO } from "../model/to";
 import { User } from "../model/entity";
@@ -22,12 +22,16 @@ export const fetchUser = async (userId: UserId, currentUser: User|undefined|null
   return fetchJson(`/user/${userId}`, currentUser);
 }
 
-export const postUser = async (user: User): Promise<void> => {
-  await callGenericApiPost('/user', userFormToUserTO, user);
+export const saveUser = async (user: User): Promise<User> => {
+  return genericSave('/user', user, userFormToUserTO);
 };
 
-export const putUser = async (user: User): Promise<void> => {
-  await callGenericApiPut('/user', userFormToUserTO, user);
+export const postUser = async (user: User): Promise<User> => {
+  return callGenericApiPost('/user', userFormToUserTO, user);
+};
+
+export const putUser = async (user: User): Promise<User> => {
+  return callGenericApiPut('/user', userFormToUserTO, user);
 };
 
 export const useUserQuery = (currentUser: User|null|undefined, userId: UserId|undefined) => useGenericQuery(

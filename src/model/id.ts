@@ -6,6 +6,7 @@ export type OrganisationId = OrganisationIdType;
 export type SeriesId = SeriesIdType;
 export type UserId = UserIdType;
 export type ISO8601Date = string;
+export type ModelType<Id extends IdType = IdType, T = unknown> = Omit<T, 'id'> & { id?: Id };
 
 type IsStringCompatible<T> = T extends string ? true : false;
 

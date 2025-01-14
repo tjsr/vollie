@@ -1,12 +1,12 @@
-import { PageLoadStatus, isReadyStatus, log, pageLoadStatusString } from './util';
+import { PageLoadStatus, isReadyStatus, pageLoadStatusString } from './util';
 import { QueryClient, useMutation } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
-import { postOrganisation, putOrganisation, useOrganisationQuery } from '../query/organiser.js';
+import { saveOrganisation, useOrganisationQuery } from '../query/organiser.js';
 import { useCurrentUser, useUi, useUser } from '../stores';
 
-import { Form } from '@rjsf/mui';
 import { LoadingScreen } from './Common.js';
 import { RJSFSchema } from '@rjsf/utils';
+import { SimpleSchemaForm } from './common/SimpleSchemaForm.js';
 import { createOrgSchema } from '../forms/organiser/fields.js';
 import { uiSchema as orgUiSchema } from '../forms/organiser/uiSchema.js';
 import { useAllUsersQuery } from '../query/user.js';
@@ -40,7 +40,7 @@ export const OrganisationFormPage = (): React.ReactNode => {
 
   // Mutations
   const saveOrg = useMutation({
-    mutationFn: organisationId === undefined ? postOrganisation : putOrganisation,
+    mutationFn: saveOrganisation,
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['organisations'] });
@@ -112,23 +112,38 @@ export const OrganisationFormPage = (): React.ReactNode => {
     // hasPermission={!(eventFormSchema !== undefined && !(organisations?.length > 0))}
     // isLoading={!eventFormSchema || seriesQuery.isLoading || eventQuery.isLoading || organisationQuery.isLoading}
     // hasLoadError={seriesQuery.isError || eventQuery.isError || organisationQuery.isError}
-    <Form
+    <SimpleSchemaForm
+      modelId={organisationId || null}
       schema={orgFormSchema}
-      validator={validator}
       uiSchema={orgUiSchema}
+      validator={validator}
       formData={orgQuery.data}
-      onChange={(_data, id) => log('changed ' + id)}
-      onSubmit={async (d, e) => {
-        log('submitted');
-        console.log('data: ', d);
-        console.log('event: ', e);
-        return saveOrg.mutateAsync(d.formData);
-      }}
-      liveValidate={true}
-      // onSubmit={(e) => submit(e.formData)}
-      onError={log('errors')}
-    />
-  );
+      onSubmit={async (d) => saveOrg.mutateAsync(d.formData)} />
+    );
+
+  // return (
+  //   <Form
+  //     schema={orgFormSchema}
+  //     validator={validator}
+  //     uiSchema={orgUiSchema}
+  //     formData={orgQuery.data}
+  //     onChange={(_data, id) => log('changed ' + id)}
+  //     onSubmit={async (d, e) => {
+  //       log('submitted');
+  //       console.log('data: ', d);
+  //       console.log('event: ', e);
+  //       return saveOrg.mutateAsync(d.formData);
+  //     }}
+  //     liveValidate={true}
+  //     // onSubmit={(e) => submit(e.formData)}
+  //     onError={log('errors')}
+  //   >
+  //   <div>
+  //     <Button type='submit' color='primary'>{organisationId == undefined ? 'Create' : 'Save changes'}</Button>
+  //     <Button type='button' color='secondary'>Cancel</Button>
+  //   </div>
+  //   </Form>
+  // );
 };
 
 export const MemoizedOrganisationFormPage = React.memo(OrganisationFormPage);

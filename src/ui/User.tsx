@@ -1,11 +1,11 @@
 import { QueryClient, useMutation } from '@tanstack/react-query';
-import { postUser, useUserQuery } from '../query/user.js';
+import { saveUser as saveUserCall, useUserQuery } from '../query/user.js';
 import { useCurrentUser, useUi } from '../stores/index.js';
 import { useEffect, useState } from 'react';
 
-import { Form } from '@rjsf/mui';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
+import { SimpleSchemaForm } from './common/SimpleSchemaForm.js';
 import { createUserSchema } from '../forms/user/fields.js';
 import { log } from './util';
 import { useIntOrNewParam } from '../stores/useIntOrNewParam.js';
@@ -14,7 +14,7 @@ import validator from '@rjsf/validator-ajv8';
 
 const DEV_MODE = true;
 
-export const UserFormPage = (): JSX.Element => {
+export const UserFormPage = (): React.ReactNode => {
   const { setFooterLinks, setTitle } = useUi((state) => state);
   const { userId } = useIntOrNewParam();
   const [userFormSchema, setUserFormSchema] = useState<RJSFSchema | undefined>(createUserSchema());
@@ -51,11 +51,12 @@ export const UserFormPage = (): JSX.Element => {
 
   // Mutations
   const saveUser = useMutation({
-    mutationFn: postUser,
+    mutationFn: saveUserCall,
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
+    throwOnError: true,
   });
 
   if (userId === undefined) {
@@ -84,22 +85,21 @@ export const UserFormPage = (): JSX.Element => {
     return <div>Loading...</div>;
   }
 
+  if (userFormSchema === undefined) {
+    return 'Org form schema not loaded.';
+  }
+
   return (
     // hasPermission={!(eventFormSchema !== undefined && !(organisations?.length > 0))}
     // isLoading={!eventFormSchema || seriesQuery.isLoading || eventQuery.isLoading || organisationQuery.isLoading}
     // hasLoadError={seriesQuery.isError || eventQuery.isError || organisationQuery.isError}
-    <Form
+    <SimpleSchemaForm
+      modelId={userId || null}
       schema={userFormSchema}
       validator={validator}
       uiSchema={userUiSchema}
       formData={userQuery.data}
-      onChange={log('changed')}
-      onSubmit={async (d, e) => {
-        log('submitted');
-        console.log('data: ', d);
-        console.log('event: ', e);
-        await saveUser.mutateAsync(d.formData);
-      }}
+      onSubmit={async (d) => saveUser.mutateAsync(d.formData)}
       // onSubmit={(e) => submit(e.formData)}
       onError={log('errors')}
     />

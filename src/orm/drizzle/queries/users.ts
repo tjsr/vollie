@@ -7,6 +7,7 @@ import { UsersTable } from "../schema";
 import { VollieDatabaseError } from "../../errors";
 import { VollieDrizzleConnection } from "../../types";
 import { eq } from "drizzle-orm";
+import { safeCheckAndCopy } from "./utils.js";
 
 const userSelect = (db: VollieDrizzleConnection) => db
   .select({ users: UsersTable })
@@ -46,12 +47,25 @@ export const createUser: CreateFunction<UserTO> = async (db: VollieDrizzleConnec
     if (result.length > 1) {
       throw new Error(`Returned multiple results from insert when creating ${JSON.stringify(user)}`);
     }
-    console.log(`Created series with id ${result[0].id}`);
+    console.log(`Created user with id ${result[0].id}`);
     return result[0];
   });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const updateUser = async (_db: VollieDrizzleConnection, _user: Existing<UserTO>): Promise<UserId> => {
-  throw new Error('not yet implemented');
+export const updateUser = async (db: VollieDrizzleConnection, user: Existing<UserTO>): Promise<UserId> => {
+  const updateOrganisation: Partial<UserTO> = safeCheckAndCopy(user,
+    ['firstName', 'lastName', 'email', 'phone']
+  );
+  return db.update(UsersTable)
+    .set(user)
+    .where(eq(UsersTable.id, updateOrganisation.id!))
+    .returning({ id: UsersTable.id })
+    .then((result) => {
+  
+    if (result.length > 1) {
+      throw new Error('Returned multiple results from insert');
+    }
+    console.log(`Updated user with id ${result[0].id}`);
+    return result[0].id;
+  });
 };

@@ -1,9 +1,18 @@
+import { IdType, ModelType } from "../model/id";
 import { InvalidContentError, InvalidContentTypeError, NotFoundError, VollieError } from "../types";
 
-import { IdType } from "../model/id";
 import { User } from "../model/entity";
 import { WithId } from "../orm/drizzle/idTypes";
 import { useQuery } from "@tanstack/react-query";
+
+export const genericSave = async <NewTO, Model extends ModelType>(urlPrefix: string, obj: Model, conversionFunction: (data: Model) => NewTO): Promise<Model> => {
+  if (obj.id !== undefined) {
+    const url = `${urlPrefix}/${obj.id}`;
+    return callGenericApiPut(url, conversionFunction, obj);
+  } else {
+    return callGenericApiPost(urlPrefix, conversionFunction, obj);
+  }
+};
 
 export const callGenericApiPost = async <NewTO, Model>(url: string, conversionFunction: (data: Model) => NewTO, data: Model): Promise<Model> => {
   const apiUrl: string = '/api' + url;
