@@ -57,15 +57,16 @@ export const updateUser = async (db: VollieDrizzleConnection, user: Existing<Use
     ['firstName', 'lastName', 'email', 'phone']
   );
   return db.update(UsersTable)
-    .set(user)
+    .set(updateOrganisation)
     .where(eq(UsersTable.id, updateOrganisation.id!))
     .returning({ id: UsersTable.id })
     .then((result) => {
-  
-    if (result.length > 1) {
-      throw new Error('Returned multiple results from insert');
-    }
-    console.log(`Updated user with id ${result[0].id}`);
-    return result[0].id;
-  });
+      if (result.length > 1) {
+        throw new Error('Returned multiple results from insert');
+      }
+      return result[0].id;
+    }).catch((err) => {
+      console.error(updateUser, 'Error updating user', err, user);
+      throw err;
+    });
 };

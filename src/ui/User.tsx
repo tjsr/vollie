@@ -6,11 +6,12 @@ import { useEffect, useState } from 'react';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
 import { SimpleSchemaForm } from './common/SimpleSchemaForm.js';
+import { User } from '../model/entity.js';
 import { createUserSchema } from '../forms/user/fields.js';
 import { log } from './util';
 import { useIntOrNewParam } from '../stores/useIntOrNewParam.js';
+import { useNavigate } from 'react-router-dom';
 import { uiSchema as userUiSchema } from '../forms/user/uiSchema.js';
-import validator from '@rjsf/validator-ajv8';
 
 const DEV_MODE = true;
 
@@ -21,8 +22,10 @@ export const UserFormPage = (): React.ReactNode => {
   const { currentUser } = useCurrentUser();
   const queryClient = new QueryClient();
 
+  const navigate = useNavigate();
+
   const userQuery = useUserQuery(currentUser, userId || undefined);
-  console.log('Creating user form page', userId);
+  console.log('UserFormPage', 'Creating user form page', userId);
 
   useEffect(() => {
     setFooterLinks([{ target: '/users', text: 'Back to Users' }]);
@@ -52,9 +55,18 @@ export const UserFormPage = (): React.ReactNode => {
   // Mutations
   const saveUser = useMutation({
     mutationFn: saveUserCall,
-    onSuccess: () => {
+    onSuccess: async (user: User, vars: User, ctx: unknown) => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      if (!userId) {
+        console.log('Redirecting to new user page.', vars, ctx);
+        return queryClient.invalidateQueries({ queryKey: ['users'] })
+          .then(() => navigate(`/user/${user.id}`));
+      }
+
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['users'] }),
+        userQuery.refetch()
+      ]);
     },
     throwOnError: true,
   });
@@ -77,7 +89,7 @@ export const UserFormPage = (): React.ReactNode => {
           Failed loading user {userId}: {userQuery.failureReason.message}
         </div>
         {DEV_MODE && <div className="dev error access">{userQuery.failureReason.message}.</div>}
-      </>
+      </> 
     );
   }
 
@@ -96,7 +108,6 @@ export const UserFormPage = (): React.ReactNode => {
     <SimpleSchemaForm
       modelId={userId || null}
       schema={userFormSchema}
-      validator={validator}
       uiSchema={userUiSchema}
       formData={userQuery.data}
       onSubmit={async (d) => saveUser.mutateAsync(d.formData)}

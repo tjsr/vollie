@@ -17,5 +17,6 @@ export const safeCheckAndCopy = <T extends Existing<object>>(source: T, keys: (k
   const updatedElement: T = cloneDefinedKeys(source,
     keys
   );
+  updatedElement.id = source.id;
   return updatedElement;
 };

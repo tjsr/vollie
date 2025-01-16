@@ -1,13 +1,17 @@
 import { LinkTarget } from "../stores/ui";
 import { User } from "../model/entity";
 
-export interface VolliePageProps {
-  // addFooterLink: (elements: LinkElement[]) => void;
-
-  addFooterLink: (elements: LinkTarget) => void;
+export interface FooterLinkManager {
+  addFooterLink: (t: LinkTarget) => void;
   clearFooterLinks: () => void;
-  setFooterLinks: (elements: LinkTarget[]) => void;
-  setTitle: (title: string) => void;
+  setFooterLinks: (footerLinks: LinkTarget[]) => void;
+}
+
+export interface TitleManager {
+  setTitle: (t: string) => void;
+}
+
+export interface VolliePageProps extends FooterLinkManager, TitleManager {
   currentUser?: User | null;
 }
 

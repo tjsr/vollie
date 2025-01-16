@@ -31,14 +31,20 @@ export const useUi = create<UiState>((set) => ({
   clearFooterLinks: () => set((state) => {
     return { title: state.title, footerLinks: [] };
   }),
-  setFooterLinks: (footerLinks: LinkTarget[]) => set((state) => {
-    return {
+  setFooterLinks: (updatedFooterLinks: LinkTarget[]) => set((state) => {
+    const outputLinks = {
       title: state.title,
       footerLinks: [
-        ...footerLinks,
+        ...updatedFooterLinks,
         { text: 'Back to main', target: '/' }
       ]
     };
+
+    if (JSON.stringify(outputLinks.footerLinks) === JSON.stringify(state.footerLinks)) {
+      return state;
+    }
+    console.log('Footer links changed', outputLinks, state.footerLinks);
+    return outputLinks;
   }),
   setTitle: (t: string):void => set((state) => {
     if (t !== state.title) {

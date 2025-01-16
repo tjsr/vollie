@@ -1,6 +1,8 @@
 import { IdType, ModelType } from "../model/id";
 import { InvalidContentError, InvalidContentTypeError, NotFoundError, VollieError } from "../types";
+import { MutationFunction, QueryClient, UseQueryResult, useMutation } from "@tanstack/react-query";
 
+import { NavigateFunction } from "react-router-dom";
 import { User } from "../model/entity";
 import { WithId } from "../orm/drizzle/idTypes";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +45,8 @@ export const callGenericApiPut = async <ExistingTO, Model>(url: string, conversi
   const apiUrl: string = '/api' + url;
   const formTransferObject: ExistingTO = conversionFunction(data);
   const body = JSON.stringify(formTransferObject);
-  console.trace(callGenericApiPut.name, apiUrl, data, formTransferObject);
+  console.trace(callGenericApiPut.name, 'PUT', apiUrl, 'Data:', data);
+  console.trace(callGenericApiPut.name, 'PUT', apiUrl, 'TO:', formTransferObject);
   const response: Response = await fetch(apiUrl, {
     method: 'PUT',
     headers: {
@@ -80,18 +83,19 @@ export const checkContentType = (response: Response, url: string, contentType: s
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const fetchJson = async <O extends WithId<ID, any>, ID extends IdType>(url: string, currentUser: User|undefined|null): Promise<O> => {
   const fetchUrl = '/api' + url;
-  console.log(`fetchJson ${fetchUrl} called`);
   const response = await fetch(fetchUrl, { method: 'GET', headers: { 'Content-Type': 'application/json', 'User': currentUser?.email || 'none' } });
   checkContentType(response, fetchUrl);
   if (response.status === 404) {
     throw new NotFoundError(`Failed to fetch ${url}`);
   } else if (response.status >= 400) {
-    console.error(`Failed to fetch ${fetchUrl}`, response);
+    console.error(fetchJson.name,'GET', fetchUrl, response.status, `Error response fetching JSON`, response);
     throw new Error(`Failed to fetch ${fetchUrl}`);
   }
-  console.log(`fetchJson ${fetchUrl} got response`);
-  const json = response.json().then((value) => value as O).catch((err) => {
-    console.error(`Failed while fetching JSON from ${fetchUrl}`, err.message);
+  const json = response.json().then((value) => {
+    console.log(fetchJson.name, 'GET', fetchUrl, response.status, `Got response`);
+    return value as O;
+  }).catch((err) => {
+    console.error(fetchJson.name,'GET', fetchUrl, response.status, `Failed while fetching JSON`, err.message);
     throw err;
   });
   return json;
@@ -109,7 +113,7 @@ export const useGenericQuery = <ReturnType extends object, IdType>(
   queryKey: [queryKey, id],
   queryFn: () => {
     if (!id || (typeof id === 'number' && id <= 0)) {
-        console.warn(`Skipped event load because ${key}Id=${id}`);
+        console.warn(useGenericQuery.name, `Skipped event load because ${key}Id=${id}`);
         return;
     }
 
@@ -122,7 +126,7 @@ export const useGenericQuery = <ReturnType extends object, IdType>(
         console.error(`${key} not found: ${id}`);
         throw err;
       }
-      console.error(`Failed to fetch ${key}: ${id}`, err, err.status);
+      console.error(useGenericQuery.name, `Failed to fetch ${key}: ${id}`, err, err.status);
       throw err;
     });
   },
@@ -140,3 +144,31 @@ export const useGenericAllQuery = <ReturnType extends object>(
     return fetchAll(currentUser);
   },
 });
+
+
+export const useSaveAndRedirectMutation = <M,>(
+  navigate: NavigateFunction,
+  queryClient: QueryClient,
+  query: UseQueryResult<void | M | undefined, Error>,
+  saveFn: MutationFunction<M, M> | undefined,
+  id: IdType,
+  key: string, redirectUrlPrefix: string) => {
+  return useMutation({
+    mutationFn: saveFn,
+    onSuccess: async (obj: M, vars: M, ctx: unknown) => {
+      const returnedId: IdType = (obj as WithId<IdType, M>).id as IdType;
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: [key] });
+      if (!id) {
+        console.log('Redirecting to new organisation page.', vars, ctx);
+        return queryClient.invalidateQueries({ queryKey: [key] })
+          .then(() => navigate(`${redirectUrlPrefix}/${returnedId}`));
+      }
+
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: [key] }),
+        query.refetch()
+      ]);
+    },
+  });
+};

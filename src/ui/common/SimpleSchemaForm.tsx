@@ -10,16 +10,18 @@ import { IdType } from "../../model/id";
 import PendingIcon from '@mui/icons-material/Pending';
 import React from "react";
 import { log } from "../util";
+import validator from '@rjsf/validator-ajv8';
 
 interface SchemaFormProps<Model = any,
   S extends StrictRJSFSchema = any,
   F extends FormContextType = any
-> extends FormProps<any, S, F> {
+> extends Omit<FormProps<any, S, F>, 'validator'> {
   modelId: IdType | undefined | null;
   // schema: RJSFSchema;
   // uiSchema: UiSchema<any, any, any>
   // validator: any;
   // formData: any;
+  validator?: any;
   onSubmit: (data: IChangeEvent<any, any, any>, event: React.FormEvent<any>) => Promise<Model>;
   // onError?: (errors: any) => void;
 }
@@ -32,12 +34,13 @@ export const SimpleSchemaForm = <Model = any,
   const [primaryButtonColor, setPrimaryButtonColor] = React.useState<'primary' | 'inherit' | 'success' | 'error' | 'secondary' | 'info' | 'warning'>('primary');
   const [submitButtonIcon, setSubmitButtonIcon] = React.useState<React.ReactNode>(undefined);
   const [formHasvalidationError, setFormHasValidationError] = React.useState(false);
-
+ 
   return (
     <Form
       {
         ...props
       }
+      validator={props.validator || validator}
 
       // schema={props.schema}
       // validator={props.validator}
@@ -46,9 +49,11 @@ export const SimpleSchemaForm = <Model = any,
       // validator={props.validator}
       // uiSchema={props.uiSchema || undefined}
       // formData={props.formData}
+        focusOnFirstError={props.focusOnFirstError !== undefined ? props.focusOnFirstError : true}
         onChange={(data, id) => {
           log('changed ' + id);
           setSubmitButtonIcon(undefined);
+          setPrimaryButtonColor('primary');
           if (props.onChange) {
             return props.onChange(data, id);
           }

@@ -1,11 +1,12 @@
+import { Existing, NewUserTO, UserTO } from "../model/to";
 import { callGenericApiPost, callGenericApiPut, fetchJson, genericSave, useGenericAllQuery, useGenericQuery } from "./util";
 
-import { NewUserTO } from "../model/to";
 import { User } from "../model/entity";
 import { UserId } from "../model/id";
 
-const userFormToUserTO = (data: User): NewUserTO => {
-  const to: NewUserTO = {
+const userFormToUserTO = (data: User): NewUserTO | Existing<UserTO> => {
+  const to: UserTO = {
+    id: data.id,
     email: data.email,
     firstName: data.firstName,
     lastName: data.lastName,

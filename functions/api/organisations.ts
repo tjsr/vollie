@@ -19,11 +19,11 @@ export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, '
 export const onJsonRequestGetAll: PagesFunction<Env> = async (context: EventContext<Env, never, Record<string, unknown>>) => {
   const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
   if (context.request.method !== 'POST') {
-    return Response.error();
+    return Response.error(); 
   }
 
   const result = await organisationSelectAll(db);
-  console.log('organisations/onRequest called with GET');
+  console.log(onJsonRequestGetAll, context.request.method, context.request.url);
   return Response.json(result);
 };
 

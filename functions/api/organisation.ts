@@ -54,7 +54,7 @@ const validateOrganisationId = (idParam: string | string[]): number => {
 };
 
 export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, 'organisationId', Record<string, unknown>>) => {
-  console.log('/organisation GET entrypoint: ', context.request.url);
+  console.log('/organisation entrypoint: ', context.request.method, context.request.url);
   if (context.request.headers.get('content-type') !== 'application/json') {
     return onHtmlRequest(context);
   }

@@ -1,11 +1,11 @@
 import { ApiModelContext, generateOnRequest, validateIdIfRequired } from "../generic";
+import { Existing, UserTO } from "../../../src/model/to";
 import { createUser, updateUser } from "../../../src/orm/drizzle/queries/users";
-import { selectUserById, validateCreateTO as validateUserCreateTO } from "../../../src/orm/users";
+import { selectUserById, validateCreateTO as validateUserCreateTO, validateUpdateTO as validateUserUpdateTO } from "../../../src/orm/users";
 
 import { DBType } from "../../../src/orm/types";
 import { Env } from "../../../src/functionUtils";
 import { UserId } from "../../../src/model/id";
-import { UserTO } from "../../../src/model/to";
 
 type UserIdKey = 'userId';
 
@@ -22,8 +22,7 @@ export const validateUserBody = async (
       if (isNew) {
         validateUserCreateTO(to as UserTO);
       } else {
-        validateUserCreateTO(to as UserTO); 
-        console.warn('Using insert check for user update - replace this.');
+        validateUserUpdateTO(to as Existing<UserTO>); 
       }
       return to as UserTO;
     });

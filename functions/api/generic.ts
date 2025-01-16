@@ -25,8 +25,15 @@ const validateHasNoId = async (body: Record<string, unknown>): Promise<Record<st
   return body;
 };
 
+const validateHasId = async (body: Record<string, unknown>): Promise<Record<string, unknown>> => {
+  if (body['id'] === undefined || body['id'] === null) {
+    throw new Error('Body contains no ID');
+  }
+  return body;
+};
+
 export const validateIdIfRequired = async (body: Record<string, unknown>, newObject: boolean): Promise<Record<string, unknown>> =>
-  newObject ? validateHasNoId(body) : Promise.resolve(body);
+  newObject ? validateHasNoId(body) : validateHasId(body);
 
 const buildResponseFromError = (err: unknown, requestBody: unknown): Response => {
   let status = 500;
@@ -36,8 +43,10 @@ const buildResponseFromError = (err: unknown, requestBody: unknown): Response =>
     console.error('Error validating body', err, requestBody);
     status = 400;
   } else if (err instanceof Error) {
-    console.trace(err.message, err);
+    console.trace(err.message, err, requestBody);
     console.error(err.message, err);
+  } else {
+    console.error('Unknown error from request', err, requestBody);
   }
   const responseBody = {
     message,
@@ -106,7 +115,7 @@ export const processGenericPut = async <
 ): Promise<Response> => {
   const db: DBType = getDbConnectionFromEnv(context.env);
 
-  console.log(processGenericPut, 'onRequest called with POST');
+  console.log(processGenericPut, context.request.method, context.request.url);
   return context.request.json()
     .then((requestBody: unknown) => requestBody as Record<string, unknown>)
     .then((requestBody) => 
@@ -130,7 +139,7 @@ export const processGenericPost = <
 ): Promise<Response> => {
   const db: DBType = getDbConnectionFromEnv(context.env);
 
-  console.log(`onRequest ${context.request.url} called with POST`);
+  console.log(processGenericPost, context.request.url, context.request.method);
   return context.request.json()
     .then((requestBody: unknown) => requestBody as Record<string, unknown>)
     .then((requestBody) => 
@@ -155,7 +164,7 @@ export const procesGenericGetById = async <
 ): Promise<Response> => {
   const params: Params<IdRequestParam> = context.params;
   const idParamValue = params[idParam];
-  console.log(`generic onRequest GET ${context.request.url} called`, idParamValue);
+  console.log(procesGenericGetById, context.request.method, context.request.url, `generic onRequest GET called`, idParamValue);
   if (context.params[idParam] as string === 'new') {
     return Response.json({});
   }
@@ -177,7 +186,7 @@ export const generateOnRequest = <
 const returnFunc: PagesFunction<Env> = async (
     context: EventContext<Env, idKey, Record<string, unknown>>
   ): Promise<Response> => {
-    console.log(`${api.entrypoint} entrypoint: ${context.request.url}`);
+    console.log(generateOnRequest, context.request.method, context.request.url, `${api.entrypoint} entrypoint: ${context.request.url}`);
     try {
       if (context.request.headers.get('content-type') !== 'application/json') {
         return onHtmlRequest(context);
@@ -200,7 +209,7 @@ const returnFunc: PagesFunction<Env> = async (
         return procesGenericGetById(context, api.idParam, api.validateId, api.select);
       }
     } catch (err) {
-      console.error(err);
+      console.error(generateOnRequest, context.request.method, context.request.url, err);
       return Response.error();
     }  
   };
