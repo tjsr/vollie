@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "npm run db:generate && npx wrangler d1 migrate vollie-dev && drizzle-kit migrate",
+    "db:migrate": "npm run db:generate && npx wrangler d1 migrations apply vollie-dev && drizzle-kit migrate",
     "db:export:dev": "mkdir data && npx wrangler d1 export vollie-dev --local --no-schema --output=./data/export.sql",
     "db:export:dev-all": "npx wrangler d1 export vollie-dev --local --output=./data/export.sql",
     "db:init": "wrangler d1 create vollie-dev",
