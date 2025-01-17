@@ -3,7 +3,7 @@ import { callGenericApiPost, fetchJson } from "./util";
 
 import { EventId } from "../model/id";
 import { NewRaceEventTO } from "../model/to";
-import { NotFoundError } from '../types';
+import { NotFoundError } from '../errors';
 import { useQuery } from '@tanstack/react-query';
 
 export const fetchEvent = async (eventId: EventId, currentUser: User|undefined|null): Promise<RaceEvent|void> => {  

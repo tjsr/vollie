@@ -1,5 +1,5 @@
 import { IdType, ModelType } from "../model/id";
-import { InvalidContentError, InvalidContentTypeError, NotFoundError, VollieError } from "../types";
+import { InvalidContentError, InvalidContentTypeError, NotFoundError, VollieError } from "../errors";
 import { MutationFunction, QueryClient, UseQueryResult, useMutation } from "@tanstack/react-query";
 
 import { NavigateFunction } from "react-router-dom";

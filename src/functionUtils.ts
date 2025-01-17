@@ -1,27 +1,14 @@
-import { Existing, TransferObject, Uninitialised } from "./model/to";
-
+import { Env } from "./types";
 import { IdType } from "./model/id";
-import { VollieDrizzleConnection } from "./types";
 import { WithId } from "./orm/drizzle/idTypes";
-
-export interface Env {
-  VOLLIE_DB: D1Database;
-}
-
-export type CreateFunction<
-  TO,
-  NewTO extends Uninitialised<TO> = Uninitialised<TO>,
-  ExistingTO extends Existing<TO> = Existing<TO>
-> = (db: VollieDrizzleConnection, to: NewTO) => Promise<ExistingTO>;
-export type UpdateFunction<TO extends TransferObject<unknown>, ID extends IdType> = (db: VollieDrizzleConnection, to: TO) => Promise<ID>;
 
 // type InferNewTO<NewTO> = NewTO extends Uninitialised<infer TO> ? TO : never;
 // type IdValidateFunction<ID extends IdType> = (idParam: string | string[],raw: boolean) => T;
 // type InferValidatedTO<T, ID extends IdType> = T extends BodyValidateFunction<infer TO, ID> ? TO : never;
 // type InferTO<T, ID extends IdType> = T extends BodyValidateFunction<infer TO, ID> ? TO : never;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const onHtmlRequest: PagesFunction<Env> = async (context: EventContext<Env, '', Record<string, unknown>>) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+export const onHtmlRequest: PagesFunction<Env> = async (context: EventContext<Env, any, Record<string, unknown>>): Promise<Response> => {
   console.log(`Returning empty html from ${context.request.url} for ${context.request.method}/${context.request.headers.get('content-type')}`);
   return new Response(`<!doctype html>
 <head>

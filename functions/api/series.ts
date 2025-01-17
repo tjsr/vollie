@@ -3,7 +3,7 @@ import { OrganisationId, SeriesId, validateId } from "../../src/model/id";
 import { SeriesTO, TransferObject } from "../../src/model/to";
 import { createSeries, selectSeries, updateSeries } from "../../src/orm/drizzle/queries/series";
 import { onHtmlRequest, resultForModelObject } from "../../src/functionUtils";
-import { processGenericPost, processGenericPut, validateIdIfRequired } from "./generic";
+import { processGenericJsonPost, processGenericJsonPut, validateIdIfRequired } from "./generic";
 
 import { DBType } from "../../src/orm/types";
 import { getDbConnectionFromEnv } from "../../src/orm";
@@ -71,7 +71,7 @@ export const validateSeriesBody = async (
 export const onJsonRequestPut: PagesFunction<Env> = async (
   context: EventContext<Env, 'seriesId', Record<string, unknown>>
 ): Promise<Response> => 
-  processGenericPut<
+  processGenericJsonPut<
     'seriesId',
     EventContext<Env, 'seriesId', Record<string, unknown>>,
     SeriesId,
@@ -81,7 +81,7 @@ export const onJsonRequestPut: PagesFunction<Env> = async (
 export const onJsonRequestPost: PagesFunction<Env> = async (
   context: EventContext<Env, 'seriesId', Record<string, unknown>>
 ): Promise<Response> =>
-  processGenericPost<
+  processGenericJsonPost<
     'seriesId',
     EventContext<Env, 'seriesId', Record<string, unknown>>,
     SeriesId,

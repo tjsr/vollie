@@ -3,7 +3,7 @@ import { notAllowedMethodHandler, onHtmlRequest } from "../../../src/functionUti
 import { Env } from "../../../src/types";
 
 export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, string | 'new', Record<string, unknown>>) => {
-  console.log('/user/new entrypoint: ', context.request.url);
+  console.log('/api/user/new entrypoint: ', context.request.url);
   if (context.request.headers.get('content-type') === 'application/json' && context.request.method !== 'POST') {
     return notAllowedMethodHandler(context);
   }

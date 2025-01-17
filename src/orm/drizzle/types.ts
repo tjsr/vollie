@@ -7,6 +7,12 @@ import {
   UsersTable as users
 } from './schema/index.js';
 
+import { DrizzleD1Database } from 'drizzle-orm/d1';
+
+export type VollieDrizzleConnection = DrizzleD1Database<typeof VollieDrizzleSchema>;
+
+
+
 // export { EventsTable, SeriesTable } from './schema/events.js';
 // import { events, organisers, series } from './schema/index.js';
 

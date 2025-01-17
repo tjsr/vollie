@@ -1,11 +1,11 @@
 import { Existing, Uninitialised } from "../../../model/to";
 import { User, UserTO } from "../schema/users.js";
 
-import { CreateFunction } from "../../../functionUtils";
+import { CreateFunction } from "./types.js";
 import { UserId } from "../../../model/id.js";
 import { UsersTable } from "../schema";
 import { VollieDatabaseError } from "../../errors";
-import { VollieDrizzleConnection } from "../../types";
+import { VollieDrizzleConnection } from "../types";
 import { eq } from "drizzle-orm";
 import { safeCheckAndCopy } from "./utils.js";
 

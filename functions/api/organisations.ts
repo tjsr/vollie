@@ -1,6 +1,7 @@
-import { Env, notAllowedMethodHandler, onHtmlRequest } from "../../src/functionUtils";
+import { notAllowedMethodHandler, onHtmlRequest } from "../../src/functionUtils";
 
-import { VollieDrizzleConnection } from "../../src/types";
+import { Env } from "../../src/types";
+import { VollieDBConnection } from "../../src/orm/types";
 import { getDbConnectionFromEnv } from "../../src/orm";
 import { organisationSelectAll } from "../../src/orm/drizzle/queries/organistion";
 
@@ -17,7 +18,7 @@ export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, '
 };
 
 export const onJsonRequestGetAll: PagesFunction<Env> = async (context: EventContext<Env, never, Record<string, unknown>>) => {
-  const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
+  const db: VollieDBConnection = getDbConnectionFromEnv(context.env);
   if (context.request.method !== 'POST') {
     return Response.error(); 
   }
@@ -28,7 +29,7 @@ export const onJsonRequestGetAll: PagesFunction<Env> = async (context: EventCont
 };
 
 export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext<Env, never, Record<string, unknown>>) => {
-  const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
+  const db: VollieDBConnection = getDbConnectionFromEnv(context.env);
 
   const result = await organisationSelectAll(db);
   return Response.json(result);

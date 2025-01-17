@@ -1,13 +1,14 @@
 import { Existing, Uninitialised } from "../../../model/to";
 import { SeriesTO, SeriesTable, SeriesTableTO } from "../schema/series";
 
-import { CreateFunction } from "../../../functionUtils";
+import { CreateFunction } from "./types";
 import { OrganisationsTable } from "../schema/organisations";
 import { Series } from "../model";
 import { SeriesId } from "../../../model/id";
 import { SeriesIdType } from "../idTypes";
+import { VollieDBConnection } from "../../types";
 import { VollieDatabaseError } from "../../errors";
-import { VollieDrizzleConnection } from "../../types";
+import { VollieDrizzleConnection } from "../types";
 import { eq } from "drizzle-orm";
 import { safeCheckAndCopy } from "./utils";
 
@@ -44,10 +45,10 @@ export const selectSeriesById = async (db: VollieDrizzleConnection, id: SeriesId
   return resultPromise;
 };
 
-export const selectSeries = async (db: VollieDrizzleConnection): Promise<Series[]> => 
+export const selectSeries = async (db: VollieDBConnection): Promise<Series[]> => 
   seriesSelectAll(db);
 
-export const createSeries: CreateFunction<SeriesTO> = async (db: VollieDrizzleConnection, series: Uninitialised<SeriesTO>): Promise<Existing<SeriesTO>> => {
+export const createSeries: CreateFunction<SeriesTO> = async (db: VollieDBConnection, series: Uninitialised<SeriesTO>): Promise<Existing<SeriesTO>> => {
   return db.insert(SeriesTableTO).values(series).returning().then((result) => {
     if (result.length > 1) {
       throw new Error('Returned multiple results from insert');
@@ -57,7 +58,7 @@ export const createSeries: CreateFunction<SeriesTO> = async (db: VollieDrizzleCo
   });
 };
 
-export const updateSeries = async (db: VollieDrizzleConnection, series: Existing<SeriesTO>): Promise<SeriesId> => {
+export const updateSeries = async (db: VollieDBConnection, series: Existing<SeriesTO>): Promise<SeriesId> => {
   const updateSeries: Partial<SeriesTO> = safeCheckAndCopy(series,
     ['name', 'description', 'organiser']
   );

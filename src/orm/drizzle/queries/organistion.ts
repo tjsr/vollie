@@ -5,7 +5,7 @@ import { IdType } from "../schema/types";
 import { OrganisationId } from "../../../model/id";
 import { UsersTable } from "../schema/users";
 import { VollieDatabaseError } from "../../errors";
-import { VollieDrizzleConnection } from "../../types";
+import { VollieDrizzleConnection } from "../types";
 import { eq } from "drizzle-orm";
 import { safeCheckAndCopy } from "./utils";
 
