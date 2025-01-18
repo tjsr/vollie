@@ -1,10 +1,10 @@
+import { validateId, validateIdIfRequired } from "./id";
+
 import { DBType } from "../orm/types";
 import { OrganisationId } from "../model/id";
 import { OrganisationTO } from "../model/to";
 import { UserNotFoundError } from "../errors";
 import { selectUserById } from "../orm/users";
-import { validateId } from "./id";
-import { validateIdIfRequired } from "../../functions/api/generic";
 import { validateOrganisationTO } from "../model/organisation";
 
 export const validateOrganisationId = (idParam: string | string[]): number => {

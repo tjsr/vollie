@@ -1,13 +1,14 @@
-import { Env, VollieDrizzleConnection } from "../../src/types";
-import { OrganisationId, SeriesId, validateId } from "../../src/model/id";
-import { SeriesTO, TransferObject } from "../../src/model/to";
+import { SeriesId, validateId } from "../../src/model/id";
 import { createSeries, selectSeries, updateSeries } from "../../src/orm/drizzle/queries/series";
 import { onHtmlRequest, resultForModelObject } from "../../src/functionUtils";
-import { processGenericJsonPost, processGenericJsonPut, validateIdIfRequired } from "./generic";
+import { processGenericJsonPost, processGenericJsonPut } from "./generic";
 
-import { DBType } from "../../src/orm/types";
+import { Env } from "../../src/types";
+import { SeriesTO } from "../../src/model/to";
+import { VollieDBConnection } from "../../src/orm/types";
 import { getDbConnectionFromEnv } from "../../src/orm";
 import { selectSeriesById } from "../../src/orm/drizzle/queries/series";
+import { validateSeriesBody } from "../../src/validators/series";
 
 export const onRequest: PagesFunction<Env> = async (context: EventContext<Env, string | 'new', Record<string, unknown>>) => {
   try {
@@ -31,7 +32,7 @@ export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext
     return Response.json({ });
   }
 
-  const db: VollieDrizzleConnection = getDbConnectionFromEnv(context.env);
+  const db: VollieDBConnection = getDbConnectionFromEnv(context.env);
   if (!context.params.seriesId) {
     const result = await selectSeries(db);
     return Response.json(result);
@@ -47,26 +48,6 @@ export const onJsonRequestGet: PagesFunction<Env> = async (context: EventContext
 // const _validateSeriesId = (idParam: string | string[]): number => {
 //   return validateId<SeriesId>(idParam, false);
 // };
-
-export const validateSeriesBody = async (
-  _db: DBType,
-  body: Record<string, unknown>,
-  isNew: boolean
-): Promise<TransferObject<SeriesTO>> => {
-  return validateIdIfRequired(body, isNew)
-    .then(() => {
-      const to: Partial<SeriesTO> = {
-        name: body['name'] as string,
-        description: body['description'] as string,
-        organiser: body['organiser'] as OrganisationId,
-      };
-      if (body['id'] !== undefined) {
-        to.id = body['id'] as SeriesId;
-        return to as SeriesTO;
-      }
-      return to as SeriesTO;
-    });
-};
 
 export const onJsonRequestPut: PagesFunction<Env> = async (
   context: EventContext<Env, 'seriesId', Record<string, unknown>>

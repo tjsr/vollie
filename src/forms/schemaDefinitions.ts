@@ -70,9 +70,12 @@ export const getUsersDefinition = (users: IdentifiableUser[]): RJSFSchema => {
   if (users?.length === 0) {
     return undefined;
   }
-  const fullName = (u: IdentifiableUser): string => `${u.firstName} ${u.lastName}`;
-  return {
-    enumNames: users.map((u) => fullName(u)),
-    enum: users.map((u) => ({ name: fullName(u), id: u.id }))
-  };
+  return users.map((u: IdentifiableUser) => {
+    const fullName = (u: IdentifiableUser): string => `${u.firstName} ${u.lastName}`;
+    return {
+      // const: `${u.id}`,
+      '$id': `user_${u.id}`, 
+      title: fullName(u),
+    }
+  });
 };

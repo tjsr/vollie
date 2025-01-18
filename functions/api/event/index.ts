@@ -1,31 +1,16 @@
-import { ApiModelContext, generateOnRequest, validateIdIfRequired } from "../generic";
+import { ApiModelContext, generateOnRequest } from "../generic";
 import { createEvent, selectEventById, updateEvent } from "../../../src/orm/drizzle/queries/raceevent";
 
-import { DBType } from "../../../src/orm/types";
 import { Env } from "../../../src/types";
 import { EventId } from "../../../src/model/id";
 import { RaceEventTO } from "../../../src/model/to";
 import { onHtmlRequest } from '../../../src/functionUtils';
+import { validateEventBody } from "../../../src/validators/event";
 
 // import { * as html } from '../index.html' as string;
 
 type EventIdKey = 'eventId';
 // type RaceEventContext = EventContext<Env, EventIdKey, Record<string, unknown>>;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const validateEventBody = async (
-  _db: DBType,
-  body: Record<string, unknown>,
-  isNew: boolean
-): Promise<RaceEventTO> => {
-    return validateIdIfRequired(body, isNew)
-      .then(() => {  
-    const to: Partial<RaceEventTO> = {
-      ...body,
-    };
-    return to as RaceEventTO;
-  });
-};
 
 export const oldOnRequest: PagesFunction<Env> = async (context: EventContext<Env, string | 'new', Record<string, unknown>>) => {
   console.log('/event entrypoint: ', context.request.url);

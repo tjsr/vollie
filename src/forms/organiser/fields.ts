@@ -4,7 +4,9 @@ import { getUsersDefinition } from "../schemaDefinitions";
 
 export const createOrgSchema = (users: User[]): RJSFSchema => {
   const definitions = {
-    users: getUsersDefinition(users?.length > 0 ? users : [
+    users: {
+      type: 'number',
+      oneOf: getUsersDefinition(users?.length > 0 ? users : [
       {
         email: 'test@example.com',
         firstName: 'Test',
@@ -12,7 +14,7 @@ export const createOrgSchema = (users: User[]): RJSFSchema => {
         lastName: 'User',
         phone: '5551231234',
       }
-    ]),
+    ])},
   }
   return {
     title: "Organisation details",
@@ -30,6 +32,7 @@ export const createOrgSchema = (users: User[]): RJSFSchema => {
         "default": "New unnamed organisation"
       },
       "contactUser": {
+        // "type": "object",
         "title": "Contact User",
         "$ref": "#/definitions/users"
       }

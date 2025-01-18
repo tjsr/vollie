@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FormContextType, RJSFSchema, RJSFValidationError, StrictRJSFSchema } from "@rjsf/utils";
+import {FormContextType, RJSFSchema, RJSFValidationError, StrictRJSFSchema} from "@rjsf/utils";
 import { FormProps, IChangeEvent } from "@rjsf/core/lib/components/Form";
 
 import Button from "@mui/material/Button";
@@ -26,6 +26,10 @@ interface SchemaFormProps<Model = any,
   // onError?: (errors: any) => void;
 }
 
+// const {
+//   widgets: { SelectWidget },
+// } = getDefaultRegistry(); // To get widgets from core
+
 export const SimpleSchemaForm = <Model = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any,
@@ -51,7 +55,7 @@ export const SimpleSchemaForm = <Model = any,
       // formData={props.formData}
         focusOnFirstError={props.focusOnFirstError !== undefined ? props.focusOnFirstError : true}
         onChange={(data, id) => {
-          log('changed ' + id);
+          console.log('changed', data);
           setSubmitButtonIcon(undefined);
           setPrimaryButtonColor('primary');
           if (props.onChange) {

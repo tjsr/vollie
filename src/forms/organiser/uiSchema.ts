@@ -8,6 +8,14 @@ export const uiSchema = {
     "ui:description": "The short name that will be used to reference this organiser."
   },
   "contactUser": {
+    // "type": "Dropdown",
     "ui:required": true,
+    "ui:options": {
+      "semantic": {
+        "options": {
+          text: '{firstName} {lastName} ({email})'
+        }
+      }
+    }
   }
 };

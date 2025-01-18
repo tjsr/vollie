@@ -118,7 +118,8 @@ export const OrganisationFormPage = (): React.ReactNode => {
 
   console.log(`Rendering organisation page for ${organisationId || 'new organisation'}`);
 
-  console.log('Lodaing status:', pageLoadStatusString(loadingStatus));
+  // const formData = { ...orgQuery.data, contactUser: orgQuery.data?.contactUser?.id };
+  console.log('Lodaing status:', pageLoadStatusString(loadingStatus), orgQuery.data, orgFormSchema);
   if (organisationId !== null && !isReadyStatus(loadingStatus)) {
     return <LoadingScreen loadStatus={loadingStatus} />;
   }
